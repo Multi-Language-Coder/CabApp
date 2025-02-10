@@ -1,0 +1,12 @@
+th{
+    color:black;
+    border:3px solid black;
+}
+body {
+background-color: grey;
+height:100%;
+overflow:hidden;
+}
+#googleMap{
+height: 400px; width: 100%;
+}

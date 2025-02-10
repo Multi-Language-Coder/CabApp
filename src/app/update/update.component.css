@@ -1,0 +1,24 @@
+body{
+    height:150vh;
+}  
+body{
+    background-color: grey;
+    height: 100%;
+    overflow:hidden;
+}
+input{
+border-radius: 5px;
+border: 3px black solid;
+background: lightgrey;
+margin:10px;
+}
+#googleMap{
+    height: 400px;
+     width: 100%;
+}
+.col-form-label{
+    font-weight:bold;
+}
+#divMsg{
+    display:none;
+}

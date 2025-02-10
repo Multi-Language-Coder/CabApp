@@ -1,0 +1,151 @@
+<html>
+
+<head>
+    <title>Tracking Cab</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand navbar-dark bg-dark">
+        <div class="container-fluid">
+            <div class="navbar-nav">
+                <a class="nav-link" href="/login">
+                    <i class="bi bi-house-fill"></i>
+                    Sign Out
+                </a>
+                <a class="nav-link" id="gb" href="">
+                    <i class="bi bi-house-fill"></i>
+                    Go Back
+                </a>
+                <a class="nav-link" id="upd" href="">
+                    <i class="bi bi-house-fill"></i>
+                    Update
+                </a>
+                <a class="nav-link" id="ins" href="">
+                    <i class="bi bi-house-fill"></i>
+                    Call new Cab
+                </a>
+            </div>
+        </div>
+    </nav>
+    <h2>Tracking Cab</h2>
+    <div class="floating-panel">
+        <b>Measuring System</b>
+        <select id="system">
+            <option selected value="IMPERIAL">Imperial</option>
+            <option value="METRIC">Metric</option>
+          </select>
+      </div>
+    <table class="table table-bordered table-hover table-dark table-stripeds">
+        <thead>
+            <th></th>
+            <th></th>
+        </thead>
+        <tbody>
+            <tr>
+                <td>From Location</td>
+                <td>{{locations.fromLocation}}</td>
+            </tr>
+            <tr>
+                <td>To Location</td>
+                <td>{{locations.toLocation}}</td>
+            </tr>
+            <tr>
+                <td>
+                    Distance
+                </td>
+                <td>
+                    {{locations.distance}}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Duration
+                </td>
+                <td>
+                    {{locations.duration}}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div id="googleMap" style="height: 400px; width: 100%;"></div>
+    <div id="waypoints">
+        <div id="autocompletediv">
+            <div id="title">Autocomplete search</div>
+            <div id="type-selector" class="pac-controls">
+              <input
+                type="radio"
+                name="type"
+                id="changetype-all"
+                checked="checked"
+              />
+              <label for="changetype-all">All</label>
+      
+              <input type="radio" name="type" id="changetype-establishment" />
+              <label for="changetype-establishment">establishment</label>
+      
+              <input type="radio" name="type" id="changetype-address" />
+              <label for="changetype-address">address</label>
+      
+              <input type="radio" name="type" id="changetype-geocode" />
+              <label for="changetype-geocode">geocode</label>
+      
+              <input type="radio" name="type" id="changetype-cities" />
+              <label for="changetype-cities">(cities)</label>
+      
+              <input type="radio" name="type" id="changetype-regions" />
+              <label for="changetype-regions">(regions)</label>
+            </div>
+            <br />
+            <div id="strict-bounds-selector" class="pac-controls">
+              <input type="checkbox" id="use-location-bias" value="" checked />
+              <label for="use-location-bias">Bias to map viewport</label>
+      
+              <input type="checkbox" id="use-strict-bounds" value="" />
+              <label for="use-strict-bounds">Strict bounds</label>
+            </div>
+          </div>
+          <div id="pac-container">
+            <label class="lbl">Stop: <input id="waypoint" type="text" value="San Francisco, CA" placeholder="Enter a location" /></label><br>
+          </div>
+        <br><button class="waypt-btns" type="button" id="btn-waypoint">Insert Stop</button>
+        <br><button class="waypt-btns" type="button" id="btn-clear-waypoint">Clear Stops</button>
+    </div>
+    <table class="table table-bordered table-hover table-dark table-striped">
+        <thead>
+            <th>
+                Distance
+            </th>
+            <th>
+                Duration
+            </th>
+            <th>
+                Instructions
+            </th>
+    
+        </thead>
+        <tbody>
+            @for(step of this.steps; track this.steps){
+                <tr>
+                    <td>
+                        {{step.distance.text}}
+                    </td>
+                    <td>
+                        {{step.duration.text}}
+                    </td>
+                    <td [innerHTML]="step.instructions">
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div id="infowindow-content">
+        <span id="place-name" class="title"></span><br />
+        <span id="place-address"></span>
+      </div>
+    
+</body>
+
+</html>

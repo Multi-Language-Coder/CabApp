@@ -1,0 +1,27 @@
+body{
+    background-color: grey;
+    height:100vh
+}
+thead{
+    background-color: rgb(33, 37, 41);
+}
+button{
+   border:4px dimgrey solid;
+   border-radius: 3px;
+   margin-right:10px;
+   background-color:white;
+   opacity:1;
+   
+}
+img{
+    background-repeat: repeat-y;
+    width:16px;
+    height:16px;
+}
+.tblBtns{
+    width:32px;
+    height:32px;
+}
+#divMsg{
+    display:none;background-color: lightskyblue; color:blue;
+}
