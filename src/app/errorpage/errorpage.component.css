@@ -1,0 +1,16 @@
+h1{
+    font-weight: bold;
+}
+body{
+    background-color: grey;
+    height:105vh;
+    position:relative;
+    top:-10px;
+    overflow-y: hidden;
+}
+span{
+    color:red;
+}
+p{
+    color:brown;
+}

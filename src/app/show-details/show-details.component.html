@@ -1,0 +1,164 @@
+<html>
+<head>
+    <title></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+<body>
+    <div id="sidebar1" class="collapsed">
+        <button id="toggleSidebar" class="btn btn-dark">☰</button>
+        <div id="sidebar-header">Chat Driver</div>
+        <div id="sidebar-content">
+           <app-chat-driver></app-chat-driver>
+        </div>
+    </div>
+    <div id="resize-handle"></div>
+    <div id="main-content">
+    <div class="alert alert-info bg-dark fade show" *ngIf="!dropOffTime">
+        <div class="d-flex align-items-center">
+            <div class="spinner-border text-info me-2" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mb-0">Calculating drop off time...</p>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <nav class="navbar navbar-expand navbar-dark bg-dark">
+        <div class="container-fluid">
+            <div class="navbar-nav">
+                <a class="nav-link" id="gb" href="">
+                    <i class="bi bi-arrow-left"></i>
+                    Go Back
+                </a>
+                <a class="nav-link" id="upd" href="">
+                    <i class="bi bi-pencil"></i>
+                    Update
+                </a>
+                <a class="nav-link" id="ins" href="">
+                    <i class="bi bi-taxi-front"></i>
+                    Call new Cab
+                </a>
+                <a class="nav-link" id="chk" href="">
+                    <i class="bi bi-geo-alt"></i>
+                    Check Cab
+                </a>
+            </div>'<main>
+                <div style="position: relative; display: inline-block;">
+                    <button class="notification-button" id="notification-button">
+                        <span class="notification-icon"></span>
+                        <span class="notification-badge">3</span> </button>
+                    <div class="notification-list" id="notification-list">
+                        <ul id="noti-list">
+                            @for(notification of notificationsBar; track trackByNotificationId($index, notification)) {
+                                <li class="notification-item">
+                                    @if(notification.type == "success"){
+                                        <span class="notification-icon-small success-icon"></span>
+                                        <span id="{{notification.type}}">{{notification.message}}</span>
+                                        <button class="dismiss-button" id="{{notification.keyId}}"></button>
+                                        <span>{{timeFromTimestamp(notification.keyId)}}</span>
+                                    } @else if (notification.type == "fault") {
+                                        <span class="notification-icon-small warning-icon"></span>
+                                        <span>{{notification.message}}</span>
+                                        <button class="dismiss-button" id="{{notification.keyId}}"></button>
+                                        <span>{{timeFromTimestamp(notification.keyId)}}</span>
+                                    } @else if (notification.type == "info") {
+                                        <span class="notification-icon-small info-icon"></span>
+                                        <span>{{notification.message}}</span>
+                                        <button class="dismiss-button" id="{{notification.keyId}}"></button>
+                                        <span>{{timeFromTimestamp(notification.keyId)}}</span>
+                                    }
+                                </li>
+                            }
+                            </ul>
+                    </div>
+                </div>
+            </main>'
+        </div>
+    </nav>
+    
+    <div id="divMsg" class="alert alert-info">
+        <p id="msg"></p>
+    </div>
+    <!--<button (click)="exNoti()">Send Notification</button>-->
+    <h2>Cab Details</h2>
+    <div *ngIf="exists" id = "data">
+        <h2>Your Driver's Details</h2>
+        <div class="mb-3 row">
+            <label for="UsernameInput"  class="col-sm-2 col-form-label">Name:</label>
+            <div class="col-sm-10">
+                <p>{{driver.name}}</p>
+            </div>
+        </div>
+        <div class="mb-3 row">
+            <label for="PasswordInput"  class="col-sm-2 col-form-label">Model:</label>
+            <div class="col-sm-10">
+                <p>{{driver.carType}}</p>
+            </div>
+        </div>
+        <div class="mb-3 row circle fill">
+            <label for="PasswordInput"  class="col-sm-2 col-form-label">Picture:</label>
+            <img class="circle-image" src="{{driver.imageLink}}" id="img">
+        </div>
+    </div>
+    <div id="showDetails"></div>
+    <div class="floating-panel">
+        <b>Measuring System</b>
+        <select id="system">
+            <option selected value="IMPERIAL">Imperial</option>
+            <option value="METRIC">Metric</option>
+          </select>
+      </div>
+      <div id="container">
+        <div id="map"></div>
+        <div id="sidebar"></div>
+      </div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover table-dark table-striped">
+            <thead>
+                <th>
+                    From Location
+                </th>
+                <th>
+                    To Location
+                </th>
+                <th>
+                    Date
+                </th>
+                <th>
+                    Time
+                </th>
+                <th>
+                    Number of Passengers
+                </th>
+    <th>
+        Ages
+    </th>
+    <th>
+        Distance Away
+    </th>
+    <th>
+        Pricing
+    </th>
+    <th>
+        Drop Off Time
+    </th>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{cabdata!.fromLocation}}</td>
+                    <td>{{cabdata!.toLocation}}</td>
+                    <td>{{cabdata!.date}}</td>
+                    <td>{{cabdata!.time}}</td>
+                    <td>{{cabdata!.numpassengers}}</td>
+                    <td>{{cabdata!.ages}}</td>
+                    <td>{{distance}}</td>
+                    <td>${{pricing}}</td>
+                    <td>{{set0(toString(dropOffTime.getHours()))+":"+set0(toString(dropOffTime.getMinutes()))}}</td>
+                </tr>
+            </tbody>
+        </table>
+        
+    </div>
+</div>
+</body>
+</html>

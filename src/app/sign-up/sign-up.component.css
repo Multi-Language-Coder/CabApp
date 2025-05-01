@@ -1,0 +1,30 @@
+body{
+    background-color: grey;
+}
+html, body {
+margin: 0;
+height: 100vh;
+}
+.row{
+margin:15px;
+}
+input,textarea,select{
+border-radius: 5px;
+border: 3px black solid;
+}
+select{
+font-family:cursive;
+font-size:18px;
+}
+.col-form-label{
+    font-weight:bold;
+}
+#errorDiv{
+    display:none;
+}
+#error{
+    color:yellow;
+}
+.selectdiv {
+    display: none;
+}

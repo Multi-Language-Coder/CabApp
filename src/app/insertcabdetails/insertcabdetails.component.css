@@ -1,0 +1,30 @@
+body {
+    background-color: grey;
+}
+
+html,
+body {
+    margin: 0;
+    height: 100%;
+}
+
+.row {
+    margin: 15px;
+}
+
+input {
+    border-radius: 5px;
+    border: 3px black solid;
+    background: rgb(189, 187, 187);
+}
+
+.inp{
+    width:300px;
+}
+#mapapi{
+    width:100%;
+    height:400px;
+}
+.col-form-label{
+    font-weight:bold;
+}

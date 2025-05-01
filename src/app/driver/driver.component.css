@@ -1,0 +1,86 @@
+th{
+    color:black;
+    border:3px solid black;
+}
+body {
+background-color: grey;
+height: 100%;
+margin: 0;
+position: relative;
+overflow:hidden;
+}
+#googleMap{
+height: 400px; width: 100%;
+}
+.btn{
+    cursor: pointer;
+     }
+   .btn-hover{
+     background-color:YourChoice;
+     }
+     #sidebar1 {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 250px;
+      background-color: rgb(33, 37, 41);
+      color: grey;
+      border-right: 3px solid black;
+      overflow-y: auto;
+      transition: width 0.3s ease;
+      z-index: 1000;
+    }
+    
+    #sidebar1.collapsed {
+      width: 50px;
+    }
+
+    html,
+  body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+    
+    #sidebar1 #toggleSidebar {
+      position: absolute;
+      top: 10px;
+      right: 0px;
+      background-color: rgb(33, 37, 41);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 5px 10px;
+      cursor: pointer;
+      z-index: 1001;
+    }
+    
+    #sidebar1 #toggleSidebar:hover {
+      background-color: grey;
+    }
+    
+    #sidebar1.collapsed #sidebar-header,
+    #sidebar1.collapsed #sidebar-content {
+      display: none;
+    }
+    
+    #sidebar1 #sidebar-header {
+      font-weight: bold;
+      padding: 10px;
+      border-bottom: 2px solid black;
+    }
+    
+    #sidebar1 #sidebar-content {
+      padding: 10px;
+    }
+    
+    /* Main content styles */
+    #main-content {
+      margin-left: 250px; /* Matches the width of the expanded sidebar */
+      transition: margin-left 0.3s ease;
+    }
+    
+    #sidebar1.collapsed ~ #main-content {
+      margin-left: 50px; /* Matches the width of the collapsed sidebar */
+    }
