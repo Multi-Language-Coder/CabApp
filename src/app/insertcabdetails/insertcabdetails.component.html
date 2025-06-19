@@ -11,7 +11,7 @@
 </head>
 
 <body>
-    <div id="googleMap"></div>
+    <!--<div id="map"></div>-->
     <nav class="navbar navbar-expand navbar-dark bg-dark">
         <div class="container-fluid">
             <div class="navbar-nav">
@@ -23,21 +23,22 @@
         </div>
     </nav>
     <h1>Insert Cab Details</h1>
-    <div id="mapapi" ></div>
+    <div id="map" ></div>
     <form (ngSubmit)="insertData()">
         <div class="mb-3 row">
             <label for="FromLocationInput"  class="col-sm-2 col-form-label">From
                 Location</label>
             <div class="col-sm-10">
-                <input type="text" placeholder="Shibuya Station" class="inp" id="FromLocationInput" />
+                <input type="text" placeholder="Shibuya Station" [formControl]="fromLocation" class="inp" id="FromLocationInput" />
             </div>
         </div>
         <div class="mb-3 row">
             <label for="ToLocationInput"  class="col-sm-2 col-form-label">To Location</label>
             <div class="col-sm-10">
-                <input type="text" class="inp" placeholder="Mt. Fuji" id="ToLocationInput" />
+                <input type="text" class="inp" placeholder="Mt. Fuji" [formControl]="toLocation" id="ToLocationInput" />
             </div>
         </div>
+        <button type="button" id="tryRoute" class="btn btn-dark">Test Route</button>
         <div class="mb-3 row">
             <label for="DateInput"  class="col-sm-2 col-form-label">Date</label>
             <div class="col-sm-10">

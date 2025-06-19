@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Cabdata } from '../../environments/cabdata.interface';
 import { WebSocketAPI } from '../WebSocketAPI.component';
@@ -11,6 +11,7 @@ import { User } from '../../environments/user.interface';
 import { Price } from '../../environments/priceCalc.interface';
 import { TaxState } from '../../environments/taxes.interface';
 import { Notification } from '../../environments/notifications.interface';
+import { isPlatformBrowser } from '@angular/common';
 @Component({
   selector: 'app-show-details',
   standalone: false,
@@ -45,7 +46,7 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
   fromLoc!: google.maps.marker.AdvancedMarkerElement | null;
   toLoc!: google.maps.marker.AdvancedMarkerElement | null;
   id: number | undefined;
-  WebSocketAPI!: WebSocketAPI;
+  WebSocketAPI: WebSocketAPI= new WebSocketAPI();
   directionsRenderer!: google.maps.DirectionsRenderer;
   directionsService!: google.maps.DirectionsService;
   distanceMatrix!: google.maps.DistanceMatrixService;
@@ -59,7 +60,7 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
     lat: 0,
     lng: 0
   }
-  map!: google.maps.Map;
+  //map!: google.maps.Map;
   referenceObj = new Date();
   distance: string | undefined;
   arrivalTime: Date = new Date();
@@ -72,165 +73,61 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
   };
   travelMode!: google.maps.UnitSystem;
   pricing: number = 0;
-  constructor(private googleMapsService: GoogleMapsService, private route: ActivatedRoute, private http: HttpClient) {
+  constructor(private googleMapsService: GoogleMapsService,@Inject(PLATFORM_ID) private platformId: Object, private route: ActivatedRoute, private http: HttpClient) {
 
   }
   api_key = environment.googleMapsApiKey;
-  ngAfterViewInit(): void {
-    this.googleMapsService
+  async ngAfterViewInit(): Promise<void> {
+    /*this.googleMapsService
       .loadGoogleMaps(this.api_key)
       .then(() => {
         this.initializeMap();
       })
-      .catch((error) => console.error('Error loading Google Maps:', error));
+      .catch((error) => console.error('Error loading Google Maps:', error));*/
+      if (isPlatformBrowser(this.platformId)) {
+      
+          const leafletModule = await import('leaflet');
+      
+          // Patch global L before loading routing machine
+      
+          (window as any).L = leafletModule;
+      
+          await import('leaflet-routing-machine');
+      
+          await import('leaflet-control-geocoder');
+      
+          this.initMap(leafletModule);
+          this.websckt()
+      }
+      
   }
-  initializeMap(): void {
-    const trafficLayer = new google.maps.TrafficLayer();
-    const usBounds = new google.maps.LatLngBounds(
-      new google.maps.LatLng(24.396308, -125.000000), // Southwest corner (approx. near Key West, FL and the Pacific Ocean)
-      new google.maps.LatLng(49.384358, -66.934570)  // Northeast corner (approx. near the US-Canada border in Maine)
-    );
-    const mapOptions: google.maps.MapOptions = {
-      center: { lat: 37.7749, lng: -122.4194 },
-      zoom: 0.1,
-      mapId: 'cbd7521b6e5865e3',
-      restriction: {
-        latLngBounds: usBounds,
-        strictBounds: true, // Optional: Restrict movement outside bounds
-      },
-    };
-    console.log(document.getElementById('showDetails') as HTMLElement)
-
-    const map = new google.maps.Map(
-      document.getElementById('showDetails') as HTMLElement,
-      mapOptions,
-    );
-    trafficLayer.setMap(map);
-    this.map = map;
-    console.log(map.getCenter()?.lat(), map.getCenter()?.lng())
-    this.directionsRenderer = new google.maps.DirectionsRenderer({
-      polylineOptions: {
-        strokeColor: 'red',
-        strokeWeight: 5,
-      },
-      suppressMarkers: true,
-      preserveViewport: true
-    })
-    this.directionsRenderer.setMap(map);
-    this.directionsRenderer.setPanel(
-      document.getElementById("sidebar") as HTMLElement
-    )
-    const control = document.getElementById("floating-panel") as HTMLElement;
-    map.controls[google.maps.ControlPosition.TOP_CENTER].push(control);
-    this.directionsService = new google.maps.DirectionsService();
-
-    this.distanceMatrix = new google.maps.DistanceMatrixService();
-    this.geocoder = new google.maps.Geocoder();
-
-
-    document.getElementById("goBack")?.addEventListener("click", this.goBack)
-    this.route.params.subscribe(params => {
-      this.id = parseInt(params['id']);
-      this.http.get<Cabdata>("http://localhost:8080/cab/" + params['id']).subscribe((val) => {
-        this.cabdata = val;
-        this.directionsService.route({
-          origin: this.cabdata.fromLocation,
-          destination: this.cabdata.toLocation,
-          travelMode: google.maps.TravelMode.DRIVING
-        }, (results, status) => {
-          if (status == "OK") {
-            this.geocoder.geocode({
-              address: this.cabdata.fromLocation
-            }, (result, status) => {
-              if (status == "OK") {
-                const fromLocDiv = document.createElement("div");
-                fromLocDiv.innerHTML = `
-                  <img width="32" height='32' src='https://static.thenounproject.com/png/2262144-512.png'/>
-                `
-                const toLocDiv = document.createElement("div")
-                toLocDiv.innerHTML = `
-                <img src='https://static.thenounproject.com/png/6065636-200.png' width='32' height='32'/>
-                `
-                this.fromLoc = new google.maps.marker.AdvancedMarkerElement({
-                  position: result![0].geometry.location,
-                  content: fromLocDiv,
-                  map: map
-                })
-                console.log(this.fromLoc)
-                this.geocoder.geocode({
-                  address: this.cabdata.toLocation
-                }, (result1, status1) => {
-                  if (status1 == "OK") {
-                    this.toLoc = new google.maps.marker.AdvancedMarkerElement({
-                      position: result1![0].geometry.location,
-                      content: toLocDiv,
-                      map: map
-                    })
-                  }
-                })
-              }
-            })
-
-            this.directionsRenderer.setDirections(results);
-
-          }
-        })
-        console.log("Initializing WebSocket")
-        this.WebSocketAPI = new WebSocketAPI();
-        this.websocket = new WebSocketAPI();
-        this.acceptance = new WebSocketAPI();
-        this.websckt()
-        console.log(val)
-        this.getDCD()
-        const f: google.maps.GeocoderRequest = {
-          address: this.cabdata.fromLocation
-        }
-        const t: google.maps.GeocoderRequest = {
-          address: this.cabdata.toLocation
-        }
-        this.geocoder.geocode(f, (result, status) => {
-          this.fromLocationCoords.lat = result![0].geometry.location.lat();
-          this.fromLocationCoords.lng = result![0].geometry.location.lng();
-          //this.fromLocationCoords.=result![0].
-        })
-        this.geocoder.geocode(t, (result, status) => {
-          this.toLocationCoord.lat = result![0].geometry.location.lat();
-          this.toLocationCoord.lng = result![0].geometry.location.lng();
-          //this.fromLocationCoords.=result![0].
-        })
-        //val.acc
-        //this.initializeWebSocketConnection(map)
-      })
-    })
-
-    setTimeout(() => {
-      document.getElementById("gb")?.setAttribute("href", "/edit/" + this.cabdata?.userrequested)
-      document.getElementById("upd")?.setAttribute("href", `/update/${this.cabdata?.cabid}?username=${this.cabdata?.userrequested}`)
-      document.getElementById("ins")?.setAttribute("href", `/insert/${this.cabdata?.userrequested}`)
-      document.getElementById("chk")?.setAttribute("href", `/tracking/${this.id}`)
-    }, 500)
-    document.getElementById("system")!.addEventListener(
-      "change",
-      () => {
-        const travelModeString = (document.getElementById("system") as HTMLSelectElement).value;
-        this.travelMode = this.findUnitSystem(travelModeString)
-        this.changeRoute(this.travelMode)
-      })
+  private map:any;
+  async initMap(L: typeof import('leaflet')): Promise<void>{
+    this.map = L.map('showDetails').setView([51.505, -0.09], 13);
+    
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    
+          attribution: '&copy; OpenStreetMap contributors'
+    
+        }).addTo(this.map)
   }
   websckt() {
     let alr = false;
-    this.WebSocketAPI._connect("/topic/cabdata/{fleetId}");
-    let interval = setInterval(() => {
+console.log("BIG SHOT")
+    this.WebSocketAPI._connect("/topic/cabdata/{fleetId}").then(()=>{
+      let interval = setInterval(() => {
+      
       this.WebSocketAPI._send(`/app/cabdata/${this.id!}`).then((val)=>{
+        console.log(val)
         if (val != null) {
           const result = (JSON.parse(val) as Cabdata);
           console.log(result)
           this.cabdata = result;
           console.log(`From Location:`,result.fromLocation)
           console.log(`To Location:`,result.toLocation)
-          console.log("From Location Coordinates:", this.fromLocationCoords);
+          console.log("From LocaAtion Coordinates:", this.fromLocationCoords);
           console.log("To Location Coordinates:", this.toLocationCoord);
-          if (result != undefined) {
+          /*if (result != undefined) {
             this.directionsService.route({
               origin: result.fromLocation,
               destination: result.toLocation,
@@ -266,11 +163,12 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
             } else {
   
             }
-          }
-        }
+          }*/        }
       })
       
     }, 5000)
+    });
+    
   }
   findUnitSystem(unitSystem: string) {
     switch (unitSystem) {

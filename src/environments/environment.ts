@@ -7,7 +7,7 @@ export const environment = {
   serviceId:"service_h6spl18",
   templateId:"template_nm9pdow",
   firebase:{
-    apiKey: "AIzaSyBlT0irlH3EhIrRr5p7Yd_iVoCXyJNbrPY",
+    apiKey: "AIzaSyBUkPRQqcYPM_uRQjr0cb0W0P6_ri2DvvA",
   authDomain: "cabapp-9cc6c.firebaseapp.com",
   projectId: "cabapp-9cc6c",
   storageBucket: "cabapp-9cc6c.firebasestorage.app",

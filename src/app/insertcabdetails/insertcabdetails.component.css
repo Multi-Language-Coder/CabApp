@@ -21,9 +21,10 @@ input {
 .inp{
     width:300px;
 }
-#mapapi{
+#map{
     width:100%;
     height:400px;
+    
 }
 .col-form-label{
     font-weight:bold;

@@ -10,7 +10,8 @@ export class GoogleMapsService {
     }
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,marker`;
+      //script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,marker`;
+      script.src =  "https://maps.googleapis.com/maps/api/js?key=&callback=initMap"
       script.async = true;
       script.defer = true;
       script.onload = () => {

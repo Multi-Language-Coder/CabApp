@@ -14,7 +14,7 @@ export class WebSocketAPI {
     private connectionPromise: Promise<void> | null = null;
     constructor() {
     }
-    _connect(topic: string) {
+    async _connect(topic: string):Promise<void> {
         if (!this.connectionPromise) {
             this.connectionPromise = new Promise<void>((resolve, reject) => {
                 console.log("Initialize WebSocket Connection");

@@ -1,11 +1,13 @@
 import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { Component, Inject, PLATFORM_ID } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { GoogleMapsService } from '../google-maps.service';
 import { User } from '../../environments/user.interface';
 import { MapAdvancedMarker } from '@angular/google-maps';
 import { Cabdata } from '../../environments/cabdata.interface';
+import { isPlatformBrowser } from '@angular/common';
+import { geocoders } from 'leaflet-control-geocoder';
 @Component({
   selector: 'app-insertcabdetails',
   standalone: false,
@@ -28,13 +30,16 @@ export class InsertcabdetailsComponent {
     "time": this.dateClass.getTime(),
     "30days": ''
   }
+  private map: any;
+  private routingControl:any;
   driver=""
   directionsRenderer!: google.maps.DirectionsRenderer;
   directionsService!: google.maps.DirectionsService;
   distanceMatrixService!: google.maps.DistanceMatrixService;
-  fromLocation: string | undefined;
-  toLocation: string | undefined;
-  constructor(private googleMapsService: GoogleMapsService, private http: HttpClient, private route: ActivatedRoute) {
+  fromLocation = new FormControl("");
+  toLocation = new FormControl("");
+  
+  constructor(@Inject(PLATFORM_ID) private platformId: Object/*private googleMapsService: GoogleMapsService*/, private http: HttpClient/*private route: ActivatedRoute*/) {
 
     this.date2.setDate(this.date2.getDate() + 30)
     this.today['30days'] = `${this.date2.getFullYear()}-${this.date2.getMonth() + 1 < 10 ? "0" + (this.date2.getMonth() + 1) : this.date2.getMonth() + 1}-${this.date2.getDate()}`;
@@ -55,16 +60,106 @@ export class InsertcabdetailsComponent {
 
   }
   iterable=1;
-  api_key = 'AIzaSyBUkPRQqcYPM_uRQjr0cb0W0P6_ri2DvvA'
-  ngAfterViewInit(): void {
-    this.googleMapsService
+  api_key = '677875d2dcd56002469145oand89e51'
+  async ngAfterViewInit(): Promise<void> {
+    if (isPlatformBrowser(this.platformId)) {
+
+    const leafletModule = await import('leaflet');
+
+    // Patch global L before loading routing machine
+
+    (window as any).L = leafletModule;
+
+    await import('leaflet-routing-machine');
+
+    await import('leaflet-control-geocoder');
+
+    this.initMap(leafletModule);
+
+    //this.addRouting(leafletModule);
+      document.getElementById("tryRoute")!.addEventListener("click",()=>{
+        this.addRouting(leafletModule);
+      })
+  }
+  
+    /*this.googleMapsService
       .loadGoogleMaps(this.api_key)
       .then(() => {
         this.initializeMap();
       })
-      .catch((error) => console.error('Error loading Google Maps:', error));
+      .catch((error) => console.error('Error loading Google Maps:', error));*/
   }
-  addRoute(map: google.maps.Map, directionsRenderer: google.maps.DirectionsRenderer, directionsService: google.maps.DirectionsService): void {
+  private initMap(L: typeof import('leaflet')): void {
+
+    this.map = L.map('map').setView([51.505, -0.09], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+
+      attribution: '&copy; OpenStreetMap contributors'
+
+    }).addTo(this.map)
+
+  }
+  private addRouting(L: typeof import('leaflet')): void {
+   
+    this.http.get<GeocodeMaps[]>(`https://geocode.maps.co/search?q=${this.fromLocation.value}&api_key=${this.api_key}`).subscribe((fromLoc: GeocodeMaps[]) => {
+      setTimeout(()=>{
+        this.http.get<GeocodeMaps[]>(`https://geocode.maps.co/search?q=${this.toLocation.value}&api_key=${this.api_key}`).subscribe((toLoc:GeocodeMaps[])=>{
+        const startPoint = L.latLng(parseFloat(fromLoc[0].lat),parseFloat(fromLoc[0].lon))
+        const endPoint = L.latLng(parseFloat(toLoc[0].lat),parseFloat(toLoc[0].lon))
+        
+        if ((L as any).Routing && (L as any).Routing.control) {
+
+    this.routingControl = (L as any).Routing.control({
+
+      waypoints: [startPoint, endPoint],
+
+      routeWhileDragging: true,
+
+      showAlternatives: true,
+
+      geocoder: (L.Control as any).Geocoder.nominatim(),
+
+      lineOptions: {
+
+        styles: [{ color: '#007bff', opacity: 0.8, weight: 8 }],
+
+        addWaypoints: false,
+
+        extendToWaypoints: true,
+
+        missingRouteTolerance: 10
+
+      },
+
+      altLineOptions: {
+
+        styles: [{ color: '#888', opacity: 0.4, weight: 5 }],
+
+        extendToWaypoints: true,
+
+        missingRouteTolerance: 10
+
+      },
+      show: false
+    }).addTo(this.map);
+    this.routingControl.hide();
+  } else {
+
+    console.error('L.Routing.control is not available');
+
+  }
+      })
+      },1000)
+    })
+  
+
+  //  Defensive check if L.Routing is available
+
+  
+
+  }
+  /*addRoute(map: google.maps.Map, directionsRenderer: google.maps.DirectionsRenderer, directionsService: google.maps.DirectionsService): void {
     directionsRenderer.setMap(map);
     const routeRequest: google.maps.DirectionsRequest = {
       origin: 'San Francisco, CA',
@@ -77,13 +172,6 @@ export class InsertcabdetailsComponent {
       directionsService.route(routeRequest, (result, status) => {
         if (status === google.maps.DirectionsStatus.OK && result) {
           directionsRenderer.setDirections(result);
-          /*this.steps=result.routes[0].legs[0].steps;
-          for(let i = 0; i < this.steps.length;i++){
-            this.http.get(`https://maps.googleapis.com/maps/api/place/details/json?placeid=ChIJcUElzOzMQQwRLuV30nMUEUM&key=AIzaSyBUkPRQqcYPM_uRQjr0cb0W0P6_ri2DvvA`,{responseType:'text'}).subscribe((val)=>{
-              console.log(val)
-            })
-          }*/
-          //console.log(this.steps)
         } else {
           console.error('Directions request failed:', status);
         }
@@ -162,11 +250,6 @@ export class InsertcabdetailsComponent {
                  debug[`${driver.username}`]=`${results![0].formatted_address}`
                })
              
-              /*const marker = new google.maps.Marker({
-                map:map,
-                position:{lat:driver.position[0], lng:driver.position[1]},
-                icon:"https://d1a3f4spazzrp4.cloudfront.net/car-types/map70px/map-whitesuv.png"
-              })*/
 
               //kmatrixOptions.region?.concat(`${driver.username},`)
             }
@@ -199,7 +282,7 @@ export class InsertcabdetailsComponent {
     }
     this.addRoute(map, this.directionsRenderer, this.directionsService)
     this.autocomplete(map)
-  }
+  }*/
   insertData() {
     let passeng = this.numpassengers.value;
     let if4 = false;
@@ -217,8 +300,8 @@ export class InsertcabdetailsComponent {
       this.id = val++;
       const cabdata = {
         cabid: this.id,
-        fromLocation:this.fromLocation,
-        toLocation: this.toLocation,
+        fromLocation:this.fromLocation.value,
+        toLocation: this.toLocation.value,
         date: this.date.value!,
         time: this.time.value!,
         ages: agesArr!,
@@ -241,7 +324,7 @@ export class InsertcabdetailsComponent {
       }
     })
   }
-
+  /*
   autocomplete(map: google.maps.Map) {
     const card = document.getElementById("pac-card") as HTMLElement;
     const input = document.getElementById("FromLocationInput") as HTMLInputElement;
@@ -408,11 +491,24 @@ export class InsertcabdetailsComponent {
           this.http.get(`https://maps.googleapis.com/maps/api/place/details/json?placeid=ChIJcUElzOzMQQwRLuV30nMUEUM&key=AIzaSyBUkPRQqcYPM_uRQjr0cb0W0P6_ri2DvvA`,{responseType:'text'}).subscribe((val)=>{
             console.log(val)
           })
-        }*/
+        }
         //console.log(this.steps)
       } else {
         console.error('Directions request failed:', status);
       }
     });
-  }
+  }*/
+}
+interface GeocodeMaps{
+  "place_id":number,
+  "licence":string,
+  "osm_type":string,
+  "osm_id":number,
+  "boundingbox":string[],
+  "lat":string,
+  "lon":string,
+  "display_name":string,
+  "class":string,
+  "type":string,
+  "importance":number
 }
