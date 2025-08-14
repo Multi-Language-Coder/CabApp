@@ -173,7 +173,7 @@ export class SignUpComponent {
 
   private registerUser() {
     this.http
-      .post("http://localhost:8080/user", {
+      .post("http://3.80.129.158:8080/user", {
         name: this.name.value,
         username: this.username.value,
         password: this.password.value,
@@ -190,7 +190,7 @@ export class SignUpComponent {
       })
       .subscribe({
         next: () => {
-          this.http.post("http://localhost:8080/userMsg",{
+          this.http.post("http://3.80.129.158:8080/userMsg",{
             name:this.name.value,
             username:this.username.value,
             password:this.password.value,

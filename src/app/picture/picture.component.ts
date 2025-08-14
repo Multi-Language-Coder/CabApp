@@ -52,7 +52,7 @@ username:String = ""
       }
     }
     this.username = username;
-    this.http.get<User>(`http://localhost:8080/user1/${username}`).subscribe((userDetails)=>{
+    this.http.get<User>(`http://3.80.129.158:8080/user1/${username}`).subscribe((userDetails)=>{
       this.name.setValue(userDetails.name);
       this.description.setValue(userDetails.description);
       if(userDetails.isDriver == true){
@@ -147,7 +147,7 @@ username:String = ""
     });
     
 
-    this.http.get<User>(`http://localhost:8080/user1/${username}`).subscribe((val) => {
+    this.http.get<User>(`http://3.80.129.158:8080/user1/${username}`).subscribe((val) => {
       this.user = val;
       if (val.isDriver) {
         const div = document.createElement("div");
@@ -273,12 +273,12 @@ username:String = ""
         break;
       }
     }
-      this.http.post<boolean>("http://localhost:8080/checkPassword",{
+      this.http.post<boolean>("http://3.80.129.158:8080/checkPassword",{
         username:username,
         password:this.prevPassword.value
       }).subscribe((val:boolean)=>{
         if(val){
-          this.http.get<User>(`http://localhost:8080/user1/${username}`).subscribe((val) => {
+          this.http.get<User>(`http://3.80.129.158:8080/user1/${username}`).subscribe((val) => {
             val.name=this.name.value!;
             val.imageLink = image!;
             if(this.user.isDriver){
@@ -290,8 +290,8 @@ username:String = ""
             val.description = this.description.value!;
             val.imageLink = this.username+".jpg";
             console.log(val);
-            this.http.put("http://localhost:8080/users", val).subscribe(() => {
-              this.http.post("http://localhost:8080/upload",formData).subscribe(()=>{
+            this.http.put("http://3.80.129.158:8080/users", val).subscribe(() => {
+              this.http.post("http://3.80.129.158:8080/upload",formData).subscribe(()=>{
                 alert("Successfully added photo")
                 location.href = "/profilePage"
               })

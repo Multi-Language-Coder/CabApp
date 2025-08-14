@@ -30,6 +30,7 @@ import { NgxCsvParserModule } from 'ngx-csv-parser';
 import { TestingComponent } from './testing/testing.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { ChatDriverComponent } from './chat-driver/chat-driver.component';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -61,7 +62,7 @@ import { ChatDriverComponent } from './chat-driver/chat-driver.component';
     ReactiveFormsModule,
     RouterModule,
     GoogleMapsModule,
-    NgxCsvParserModule
+    NgxCsvParserModule,
   ],
   providers: [
     provideFirebaseApp(()=> initializeApp(environment.firebase)),

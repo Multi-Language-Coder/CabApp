@@ -122,7 +122,7 @@ export class MapapiComponent {
   initializeMap(): void {
     this.route.params.subscribe(params=>{
       this.cabid=params['id']
-      this.http.get(`http://localhost:8080/getLocations/${this.cabid}`,{responseType:'text'}).subscribe((val)=>{
+      this.http.get(`http://3.80.129.158:8080/getLocations/${this.cabid}`,{responseType:'text'}).subscribe((val)=>{
         const vals = val.split(",")
         this.locations.fromLocation=vals[0]+","+vals[1]+","+vals[2];
         this.locations.toLocation=vals[3]+","+vals[4]+","+vals[5]

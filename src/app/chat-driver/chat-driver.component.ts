@@ -43,7 +43,7 @@ export class ChatDriverComponent implements OnInit {
       setTimeout(()=>{
         const int = setInterval(()=>{
           this.websocket._send("/app/cabdatas").then(val=>{
-            const cabdatas: Cabdata[] = (JSON.parse(val) as Cabdata[]);
+            const cabdatas: Cabdata[] = (JSON.parse(String(val)) as Cabdata[]);
             for(let cabdata of cabdatas){
               if(cabdata.driver != null && cabdata.driver == username && cabdata.chatAv){
                 this.cabdata = cabdata;
@@ -75,11 +75,11 @@ export class ChatDriverComponent implements OnInit {
     
     const interval = setInterval(() => {
       this.websocket._send<Cabdata>(`/app/cabdata/${this.id}`).then((result)=>{
-        result = (JSON.parse(result) as Cabdata)
+        result = (JSON.parse(String(result)) as Cabdata)
         if(result.driver != null || result.driver == ""){
           this.chatAvailable = true;
           this.driverUser = result.driver!;
-          this.driverUserdata = result;
+          //this.driverUserdata = result;
           this.cabdata = result;
           this.initializeChat(interval)
         }
@@ -180,7 +180,7 @@ export class ChatDriverComponent implements OnInit {
           
         });
         wbsckt._send(`/app/cabdata/${this.id}`).then(val=>{
-          const cabdata = (JSON.parse(val) as Cabdata);
+          const cabdata = (JSON.parse(String(val)) as Cabdata);
           console.log(cabdata,this.chatId)
           if(cabdata.chatAv == false){
             this.endChat();

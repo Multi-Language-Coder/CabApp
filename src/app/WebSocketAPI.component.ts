@@ -3,8 +3,8 @@ import SockJS from 'sockjs-client';
 import { WebsockettestComponent } from './websockettest/websockettest.component';
 import { Observable, Subject } from 'rxjs';
 import { Type } from '@angular/core';
-
 export class WebSocketAPI {
+    StompWithNoDebug = Stomp;
     webSocketEndPoint: string = 'http://localhost:8080/ws';
     topic!: string;
     stompClient!: Stomp.Client;
@@ -55,7 +55,7 @@ export class WebSocketAPI {
     /**
      * Send message to sever via web socket
      * @param {*} message 
-     */
+     * **/
     async _send<T>(destination: string,body?:string): Promise<any> {
         if (!this.stompClient || !this.stompClient.connected) {
             await this._connect(this.topic); // Ensure connected before sending
@@ -79,7 +79,7 @@ export class WebSocketAPI {
     }
 
     onMessageReceived(message: any) {
-        console.log("Message Recieved from Server :: " + message);
+        //console.log("Message Recieved from Server :: " + message);
         //this.appComponent.handleMessage(JSON.stringify(message.body));
     }
 }

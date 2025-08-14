@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { GoogleMapsService } from '../google-maps.service';
@@ -8,13 +8,15 @@ import { MapAdvancedMarker } from '@angular/google-maps';
 import { Cabdata } from '../../environments/cabdata.interface';
 import { isPlatformBrowser } from '@angular/common';
 import { geocoders } from 'leaflet-control-geocoder';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { AutocompleteAddressService, NominatimAddress } from '../autocomplete-address.service';
 @Component({
   selector: 'app-insertcabdetails',
   standalone: false,
   templateUrl: './insertcabdetails.component.html',
   styleUrl: './insertcabdetails.component.css'
 })
-export class InsertcabdetailsComponent {
+export class InsertcabdetailsComponent implements OnInit {
   id = 0
 
   date = new FormControl("");
@@ -31,57 +33,260 @@ export class InsertcabdetailsComponent {
     "30days": ''
   }
   private map: any;
-  private routingControl:any;
-  driver=""
+  private routingControl: any;
+  driver = ""
   directionsRenderer!: google.maps.DirectionsRenderer;
   directionsService!: google.maps.DirectionsService;
   distanceMatrixService!: google.maps.DistanceMatrixService;
   fromLocation = new FormControl("");
   toLocation = new FormControl("");
-  
-  constructor(@Inject(PLATFORM_ID) private platformId: Object/*private googleMapsService: GoogleMapsService*/, private http: HttpClient/*private route: ActivatedRoute*/) {
+  isLoading = false;
+  isLoading1 = false;
+  constructor(@Inject(PLATFORM_ID) private platformId: Object, private addressService: AutocompleteAddressService /*private googleMapsService: GoogleMapsService*/, private http: HttpClient/*private route: ActivatedRoute*/) {
 
     this.date2.setDate(this.date2.getDate() + 30)
     this.today['30days'] = `${this.date2.getFullYear()}-${this.date2.getMonth() + 1 < 10 ? "0" + (this.date2.getMonth() + 1) : this.date2.getMonth() + 1}-${this.date2.getDate()}`;
     //document.getElementById("register")?.addEventListener("",this.insertData)
     const cookies = document.cookie.split(";");
-    for(let cookie of cookies){
+    for (let cookie of cookies) {
       console.log(cookie)
-      if(cookie.includes("username")){
+      if (cookie.includes("username")) {
         this.userrequested = cookie.split("=")[1];
         break;
       }
     }
-    
+
     console.log(this.userrequested)
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("gb")!.setAttribute("href", `/edit/${this.userrequested}`)
     })
 
   }
-  iterable=1;
-  api_key = '677875d2dcd56002469145oand89e51'
-  async ngAfterViewInit(): Promise<void> {
-    if (isPlatformBrowser(this.platformId)) {
-
-    const leafletModule = await import('leaflet');
-
-    // Patch global L before loading routing machine
-
-    (window as any).L = leafletModule;
-
-    await import('leaflet-routing-machine');
-
-    await import('leaflet-control-geocoder');
-
-    this.initMap(leafletModule);
-
-    //this.addRouting(leafletModule);
-      document.getElementById("tryRoute")!.addEventListener("click",()=>{
-        this.addRouting(leafletModule);
+  ngOnInit(): void {
+    this.fromLocation.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap(value => {
+          if (value && value.length > 2) { // Only search if input is long enough
+            this.isLoading = true;
+            return this.addressService.searchAddresses(value);
+          } else {
+            return []; // Clear suggestions if input is too short
+          }
+        })
+      ).subscribe({
+        next: (data: NominatimAddress[]) => {
+          this.suggestions = data;
+          this.isLoading = false
+        },
+        error: (error) => {
+          console.error('Error fetching address suggestions from Nominatim:', error);
+          this.isLoading = false;
+          this.suggestions = []; // Clear suggestions on error
+        }
+      })
+    this.toLocation.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap(value => {
+          if (value && value.length > 2) { // Only search if input is long enough
+            this.isLoading = true;
+            return this.addressService.searchAddresses(value);
+          } else {
+            return []; // Clear suggestions if input is too short
+          }
+        })
+      ).subscribe({
+        next: (data: NominatimAddress[]) => {
+          this.suggestions1 = data;
+          this.isLoading1 = false
+        },
+        error: (error) => {
+          console.error('Error fetching address suggestions from Nominatim:', error);
+          this.isLoading1 = false;
+          this.suggestions1 = []; // Clear suggestions on error
+        }
       })
   }
-  
+  statesAbvr: { [key: string]: string } = {
+    "Alabama": "AL",
+    "Alaska": "AK",
+    "Arizona": "AZ",
+    "Arkansas": "AR",
+    "California": "CA",
+    "Colorado": "CO",
+    "Connecticut": "CT",
+    "Delaware": "DE",
+    "Florida": "FL",
+    "Georgia": "GA",
+    "Hawaii": "HI",
+    "Idaho": "ID",
+    "Illinois": "IL",
+    "Indiana": "IN",
+    "Iowa": "IA",
+    "Kansas": "KS",
+    "Kentucky": "KY",
+    "Louisiana": "LA",
+    "Maine": "ME",
+    "Maryland": "MD",
+    "Massachusetts": "MA",
+    "Michigan": "MI",
+    "Minnesota": "MN",
+    "Mississippi": "MS",
+    "Missouri": "MO",
+    "Montana": "MT",
+    "Nebraska": "NE",
+    "Nevada": "NV",
+    "New Hampshire": "NH",
+    "New Jersey": "NJ",
+    "New Mexico": "NM",
+    "New York": "NY",
+    "North Carolina": "NC",
+    "North Dakota": "ND",
+    "Ohio": "OH",
+    "Oklahoma": "OK",
+    "Oregon": "OR",
+    "Pennsylvania": "PA",
+    "Rhode Island": "RI",
+    "South Carolina": "SC",
+    "South Dakota": "SD",
+    "Tennessee": "TN",
+    "Texas": "TX",
+    "Utah": "UT",
+    "Vermont": "VT",
+    "Virginia": "VA",
+    "Washington": "WA",
+    "West Virginia": "WV",
+    "Wisconsin": "WI",
+    "Wyoming": "WY",
+    // Include territories if needed
+    "American Samoa": "AS",
+    "District of Columbia": "DC",
+    "Guam": "GU",
+    "Northern Mariana Islands": "MP",
+    "Puerto Rico": "PR",
+    "Virgin Islands": "VI"
+  };
+
+  private formatAddress(address: NominatimAddress['address']): string {
+    const parts: string[] = [];
+
+    // Street number and street name
+    const streetNumber = address!.house_number;
+    const streetName = address!.road || address!.footway; // Use road or footway if available
+    if (streetName) {
+      parts.push(`${streetNumber ? streetNumber + ' ' : ''}${streetName}`);
+    } else if (streetNumber) {
+      // If only house number is present, but no street name (less common, but possible)
+      parts.push(streetNumber);
+    }
+
+    // City, State PostalCode
+    const city = address!.city || address!.town || address!.village || address!['hamlet'] || address!.suburb;
+    const state = this.statesAbvr[(address!.state! as string)];
+    const postcode = address!.postcode;
+
+    let cityStatePostal = [];
+    if (city) cityStatePostal.push(city);
+    if (state) cityStatePostal.push(state);
+    if (postcode) cityStatePostal.push(postcode);
+
+    if (cityStatePostal.length > 0) {
+      // Handle the "MD 21133" part specifically
+      let cityStatePostalString = '';
+      if (cityStatePostal[0]) { // City
+        cityStatePostalString += cityStatePostal[0];
+      }
+      if (cityStatePostal[1]) { // State
+        if (cityStatePostalString) cityStatePostalString += ', ';
+        cityStatePostalString += cityStatePostal[1];
+      }
+      if (cityStatePostal[2]) { // Postal Code
+        if (cityStatePostalString && cityStatePostal[1]) cityStatePostalString += ' '; // Space if state exists
+        else if (cityStatePostalString) cityStatePostalString += ', '; // Comma if only city, but no state
+        cityStatePostalString += cityStatePostal[2];
+      }
+      parts.push(cityStatePostalString);
+    }
+
+    // Country (e.g., USA)
+    // Nominatim returns 'country_code' (e.g., 'us') and 'country' (e.g., 'United States').
+    // You can decide which to use or map 'us' to 'USA'.
+    const country = address!.country_code?.toUpperCase() === 'US' ? 'USA' : address!.country;
+    if (country) {
+      parts.push(country);
+    }
+
+    return parts.filter(p => p).join(', '); // Join only non-empty parts
+  }
+  onSelectSuggestion(suggestion: NominatimAddress, which: boolean): void {
+    if (which) {
+      const formattedAddress = this.formatAddress(suggestion.address);
+      this.fromLocation.setValue(formattedAddress, { emitEvent: false });
+      this.suggestions = []; // Clear suggestions
+      console.log('Selected address:', suggestion);
+    } else {
+      const formattedAddress = this.formatAddress(suggestion.address);
+      this.toLocation.setValue(formattedAddress, { emitEvent: false });
+      this.suggestions1 = []; // Clear suggestions
+      console.log('Selected address:', suggestion);
+    }
+  }
+
+  displayFn(suggestion: NominatimAddress | string): string {
+    if (typeof suggestion === 'string') {
+      return suggestion;
+    }
+    return suggestion && suggestion.display_name ? suggestion.display_name : '';
+  }
+  suggestions: NominatimAddress[] = []
+  suggestions1: NominatimAddress[] = []
+  iterable = 1;
+  api_key = '677875d2dcd56002469145oand89e51'
+  async ngAfterViewInit(): Promise<void> {
+
+    if (isPlatformBrowser(this.platformId)) {
+
+
+
+      import('leaflet').then(L => {
+
+
+
+        const leaflet = L.default || L;
+
+
+
+        (window as any).L = leaflet;
+
+
+
+        this.initMap(leaflet);
+
+
+
+        import('leaflet-routing-machine').then(() => {
+
+          import('leaflet-control-geocoder').then(() => {
+
+            document.getElementById("tryRoute")!.addEventListener("click", () => {
+
+              this.addRouting(leaflet);
+
+            })
+
+
+
+          }).catch(err => console.error('[MAP_DEBUG] Error importing geocoder:', err));
+
+        }).catch(err => console.error('[MAP_DEBUG] Error importing routing machine:', err));
+
+      })
+
+    }
+
     /*this.googleMapsService
       .loadGoogleMaps(this.api_key)
       .then(() => {
@@ -91,7 +296,7 @@ export class InsertcabdetailsComponent {
   }
   private initMap(L: typeof import('leaflet')): void {
 
-    this.map = L.map('map').setView([51.505, -0.09], 13);
+    this.map = L.map('map').setView([39.8333, -98.5833], 4);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
@@ -101,62 +306,63 @@ export class InsertcabdetailsComponent {
 
   }
   private addRouting(L: typeof import('leaflet')): void {
-   
+    console.log("The Leaflet Object", L);
     this.http.get<GeocodeMaps[]>(`https://geocode.maps.co/search?q=${this.fromLocation.value}&api_key=${this.api_key}`).subscribe((fromLoc: GeocodeMaps[]) => {
-      setTimeout(()=>{
-        this.http.get<GeocodeMaps[]>(`https://geocode.maps.co/search?q=${this.toLocation.value}&api_key=${this.api_key}`).subscribe((toLoc:GeocodeMaps[])=>{
-        const startPoint = L.latLng(parseFloat(fromLoc[0].lat),parseFloat(fromLoc[0].lon))
-        const endPoint = L.latLng(parseFloat(toLoc[0].lat),parseFloat(toLoc[0].lon))
-        
-        if ((L as any).Routing && (L as any).Routing.control) {
+      console.log("Leaflet Object", L)
+      setTimeout(() => {
+        this.http.get<GeocodeMaps[]>(`https://geocode.maps.co/search?q=${this.toLocation.value}&api_key=${this.api_key}`).subscribe((toLoc: GeocodeMaps[]) => {
+          const startPoint = L.latLng(parseFloat(fromLoc[0].lat), parseFloat(fromLoc[0].lon))
+          const endPoint = L.latLng(parseFloat(toLoc[0].lat), parseFloat(toLoc[0].lon))
+          console.log("L.Routing Object", L.Routing)
+          if ((L).Routing && (L as any).Routing.control) {
 
-    this.routingControl = (L as any).Routing.control({
+            this.routingControl = (L as any).Routing.control({
 
-      waypoints: [startPoint, endPoint],
+              waypoints: [startPoint, endPoint],
 
-      routeWhileDragging: true,
+              routeWhileDragging: true,
 
-      showAlternatives: true,
+              showAlternatives: true,
 
-      geocoder: (L.Control as any).Geocoder.nominatim(),
+              geocoder: (L.Control as any).Geocoder.nominatim(),
 
-      lineOptions: {
+              lineOptions: {
 
-        styles: [{ color: '#007bff', opacity: 0.8, weight: 8 }],
+                styles: [{ color: '#007bff', opacity: 0.8, weight: 8 }],
 
-        addWaypoints: false,
+                addWaypoints: false,
 
-        extendToWaypoints: true,
+                extendToWaypoints: true,
 
-        missingRouteTolerance: 10
+                missingRouteTolerance: 10
 
-      },
+              },
 
-      altLineOptions: {
+              altLineOptions: {
 
-        styles: [{ color: '#888', opacity: 0.4, weight: 5 }],
+                styles: [{ color: '#888', opacity: 0.4, weight: 5 }],
 
-        extendToWaypoints: true,
+                extendToWaypoints: true,
 
-        missingRouteTolerance: 10
+                missingRouteTolerance: 10
 
-      },
-      show: false
-    }).addTo(this.map);
-    this.routingControl.hide();
-  } else {
+              },
+              show: false
+            }).addTo(this.map);
+            this.routingControl.hide();
+          } else {
 
-    console.error('L.Routing.control is not available');
+            console.error('L.Routing.control is not available');
 
-  }
-      })
-      },1000)
+          }
+        })
+      }, 1000)
     })
-  
 
-  //  Defensive check if L.Routing is available
 
-  
+    //  Defensive check if L.Routing is available
+
+
 
   }
   /*addRoute(map: google.maps.Map, directionsRenderer: google.maps.DirectionsRenderer, directionsService: google.maps.DirectionsService): void {
@@ -300,14 +506,14 @@ export class InsertcabdetailsComponent {
       this.id = val++;
       const cabdata = {
         cabid: this.id,
-        fromLocation:this.fromLocation.value,
+        fromLocation: this.fromLocation.value,
         toLocation: this.toLocation.value,
         date: this.date.value!,
         time: this.time.value!,
         ages: agesArr!,
         numpassengers: this.numpassengers.value,
         userrequested: this.userrequested,
-        status:'Requested'
+        status: 'Requested'
       }
       console.log(cabdata)
       if (!if4 && passeng! > 3) {
@@ -317,7 +523,7 @@ export class InsertcabdetailsComponent {
       } else if ((if4 && passeng! <= 4) || (!if4 && passeng! <= 3)) {
         this.http.post("http://localhost:8080/insertCabDetails",
           cabdata, { responseType: "text" }).subscribe(() => {
-            location.href = "http://localhost:4200/showDetails/" + this.id
+            location.href = "showDetails/" + this.id
           })
       } else {
         document.getElementById("errormsg")!.innerHTML = "Too many people"
@@ -487,28 +693,28 @@ export class InsertcabdetailsComponent {
         /*this.locations.distance=result.routes[0].legs[0].distance!.text;
         this.locations.duration=result.routes[0].legs[0].duration!.text;
         this.steps=result.routes[0].legs[0].steps;*/
-        /*for(let i = 0; i < this.steps.length;i++){
-          this.http.get(`https://maps.googleapis.com/maps/api/place/details/json?placeid=ChIJcUElzOzMQQwRLuV30nMUEUM&key=AIzaSyBUkPRQqcYPM_uRQjr0cb0W0P6_ri2DvvA`,{responseType:'text'}).subscribe((val)=>{
-            console.log(val)
-          })
-        }
-        //console.log(this.steps)
-      } else {
-        console.error('Directions request failed:', status);
-      }
-    });
-  }*/
+  /*for(let i = 0; i < this.steps.length;i++){
+    this.http.get(`https://maps.googleapis.com/maps/api/place/details/json?placeid=ChIJcUElzOzMQQwRLuV30nMUEUM&key=AIzaSyBUkPRQqcYPM_uRQjr0cb0W0P6_ri2DvvA`,{responseType:'text'}).subscribe((val)=>{
+      console.log(val)
+    })
+  }
+  //console.log(this.steps)
+} else {
+  console.error('Directions request failed:', status);
 }
-interface GeocodeMaps{
-  "place_id":number,
-  "licence":string,
-  "osm_type":string,
-  "osm_id":number,
-  "boundingbox":string[],
-  "lat":string,
-  "lon":string,
-  "display_name":string,
-  "class":string,
-  "type":string,
-  "importance":number
+});
+}*/
+}
+export interface GeocodeMaps {
+  "place_id": number,
+  "licence": string,
+  "osm_type": string,
+  "osm_id": number,
+  "boundingbox": string[],
+  "lat": string,
+  "lon": string,
+  "display_name": string,
+  "class": string,
+  "type": string,
+  "importance": number
 }

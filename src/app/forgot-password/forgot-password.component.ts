@@ -52,13 +52,13 @@ export class ForgotPasswordComponent {
         this.error = error;
       })
     } else if (this.stage == 2 && new Date().getTime() - this.timeTracker.getTime() < 900000) {
-      this.http.post<boolean>("http://localhost:8080/checkPassword", {
+      this.http.post<boolean>("http://3.80.129.158:8080/checkPassword", {
         username: this.username,
         password: this.prevPassword.value
       }).subscribe((res) => {
         if (res && this.code == parseInt(this.codeInp.value!)) {
           this.userdata.password = this.newPassword.value!;
-          this.http.put<User>("http://localhost:8080/users", this.userdata).subscribe((returnedUser) => {
+          this.http.put<User>("http://3.80.129.158:8080/users", this.userdata).subscribe((returnedUser) => {
             document.getElementById("infoBox")!.style.display = "block";
             this.info = "Successfully resetted your password";
             setTimeout(() => location.href = "/login",1000);

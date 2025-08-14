@@ -2,7 +2,7 @@ import requests
 import os
 import datetime
 os.system('cls' if os.name == 'nt' else 'clear')
-url = "https://growagardenapi.vercel.app/api/stock/GetStock";
+url = "https://growagardenapi.vercel.app/api/stock/GetStock"
 url1 = "https://growagardenapi.vercel.app/api/GetWeather"
 response = requests.get(url)
 

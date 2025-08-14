@@ -1,0 +1,9 @@
+On your Backend Server - Spring Boot application):
+
+Create a new API endpoint, for example, /api/reverse-geocode.
+This endpoint should accept lat and lon as parameters.
+Inside this endpoint, use a Java HTTP client to call the Nominatim URL (https://nominatim.openstreetmap.org/reverse?lat=...&lon=...&format=json).
+Remember to set the User-Agent header on this server-side request. For example: request.setHeader("User-Agent", "CabApplication/1.0 yourname@example.com");.
+In your Angular driver.component.ts:
+
+Change your reverseGeocode function to call your new backend endpoint instead of Nominatim directly.

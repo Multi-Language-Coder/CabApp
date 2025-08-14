@@ -52,8 +52,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kB",
-                  "maximumError": "4kB"
+                  "maximumWarning": "6kB",
+                  "maximumError": "7kB"
                 }
               ],
               "outputHashing": "all"
@@ -68,6 +68,10 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options":{
+            "buildTarget":"CabApp:build",
+            "proxyConfig":"proxy.conf.json"
+          },
           "configurations": {
             "production": {
               "buildTarget": "CabApp:build:production"

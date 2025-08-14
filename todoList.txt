@@ -1,0 +1,1 @@
+[{"activity": "Wash the dishes", "status": "Unfinished"}, {"activity": "Cut the grass", "status": "Unfinished"}, {"activity": "Place a lightning rod", "status": "Unfinished"}, {"activity": "Put down my rain collector", "status": "Unfinished"}]

@@ -28,14 +28,29 @@
                 <label for="FromLocationInput"  class="col-sm-2 col-form-label">From Location</label>
                 <div class="col-sm-10">
                     <input type="text" placeholder="Shibuya Station" id="FromLocationInput" [formControl]="fromLocation" />
+                                    <div *ngIf="isLoading">Loading suggestions...</div>
+
+                <ul *ngIf="suggestions.length > 0">
+                    <li *ngFor="let suggestion of suggestions" (click)="onSelectSuggestion(suggestion,true)">
+                        {{ suggestion.display_name }}
+                    </li>
+                </ul>
                 </div>
             </div>
             <div class="mb-3 row">
                 <label for="ToLocationInput"  class="col-sm-2 col-form-label">To Location</label>
                 <div class="col-sm-10">
                     <input type="text" placeholder="Mt. Fuji" id="ToLocationInput" [formControl]="toLocation" />
+                                    <div *ngIf="isLoading1">Loading suggestions...</div>
+
+                <ul *ngIf="suggestions1.length > 0">
+                    <li *ngFor="let suggestion of suggestions1" (click)="onSelectSuggestion(suggestion,false)">
+                        {{ suggestion.display_name }}
+                    </li>
+                </ul>
                 </div>
             </div>
+            <button class="btn btn-dark" (click)="changeRoute(this.fromLocation.value!,this.toLocation.value!,L)">Test Route</button>
             <div class="mb-3 row">
                 <label for="DateInput"  class="col-sm-2 col-form-label">Date</label>
                 <div class="col-sm-10">
@@ -45,7 +60,7 @@
             <div class="mb-3 row">
                 <label for="TimeInput"  class="col-sm-2 col-form-label">Time</label>
                 <div class="col-sm-10">
-                    <input type="text" id="TimeInput" [formControl]="time" />
+                    <input type="time" id="TimeInput" [formControl]="time" />
                 </div>
             </div>
             <div class="mb-3 row">

@@ -30,7 +30,7 @@ export class EditComponent {
         break;
       }
     }
-    this.link="http://localhost:4200/insert/"+this.user;
+    this.link="insert/"+this.user;
     this.loadData()
     this.numofpages=Math.ceil(this.cabdataArr.length/3)
     document.addEventListener("DOMContentLoaded",()=>{
@@ -120,11 +120,10 @@ export class EditComponent {
       span.innerHTML = "Cab Details successfully deleted.<br/>"
       msg?.appendChild(span)
       divmsg?.setAttribute("style", "display:block;background-color: lightskyblue; color:blue;")
-      setInterval(() => {
+      alert("Successful")
         divmsg?.setAttribute("style", "display:none;background-color: lightskyblue; color:blue;")
         msg?.removeChild(span)
         location.reload()
-      }, 5000)
     })
   }
   toUpdPg(id: number) {
