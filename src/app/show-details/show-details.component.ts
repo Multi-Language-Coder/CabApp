@@ -140,7 +140,7 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
     this.route.params.subscribe((params) => {
       this.id = parseInt(params["id"]);
       this.http
-        .get<Cabdata>("https://localhost:8080/cab/" + this.id)
+        .get<Cabdata>("https://localhost:8443/cab/" + this.id)
         .subscribe((val) => {
           this.cabdata = val;
           console.log(this.cabdata);
@@ -932,9 +932,9 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
     this.showNotification("success", "Your driver has accepted your ride");
     cabdetails.accepted = "a2";
     this.http
-      .get<User>("https://localhost:8080/user1/" + cabdetails.driver)
+      .get<User>("https://localhost:8443/user1/" + cabdetails.driver)
       .subscribe((user) => {
-        user.imageLink = `https://localhost:8080/image/${user.imageLink}`;
+        user.imageLink = `https://localhost:8443/image/${user.imageLink}`;
         this.driver = user;
       });
     this.updateCabDetails(cabdetails)
@@ -948,9 +948,9 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
   ): void {
     this.exists = true;
     this.http
-      .get<User>("https://localhost:8080/user1/" + this.cabdata.driver)
+      .get<User>("https://localhost:8443/user1/" + this.cabdata.driver)
       .subscribe((user) => {
-        user.imageLink = `https://localhost:8080/image/${user.imageLink}`;
+        user.imageLink = `https://localhost:8443/image/${user.imageLink}`;
         this.driver = user;
       });
     this.getDriverLocation(map, L);
@@ -1001,7 +1001,7 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         this.http
-          .put(`https://localhost:8080/insertCabDetails`, cabdetails)
+          .put(`https://localhost:8443/insertCabDetails`, cabdetails)
           .subscribe({
             next: (response) => resolve(response),
             error: (error) => reject(error),

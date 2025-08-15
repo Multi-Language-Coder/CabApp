@@ -5,7 +5,7 @@ import { Observable, Subject } from 'rxjs';
 import { Type } from '@angular/core';
 export class WebSocketAPI {
     StompWithNoDebug = Stomp;
-    webSocketEndPoint: string = 'https://localhost:8080/ws';
+    webSocketEndPoint: string = 'https://localhost:8443/ws';
     topic!: string;
     stompClient!: Stomp.Client;
     result: any;

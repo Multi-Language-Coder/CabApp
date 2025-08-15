@@ -437,7 +437,7 @@ export class InsertcabdetailsComponent implements OnInit {
             map:map,
             position:{lat:pos.lat,lng:pos.lng}
           })
-          this.http.get<User[]>("https://localhost:8080/getDrivers").subscribe((val) => {
+          this.http.get<User[]>("https://localhost:8443/getDrivers").subscribe((val) => {
            const drivers = val;
            const debug:any = {
            }
@@ -502,7 +502,7 @@ export class InsertcabdetailsComponent implements OnInit {
         break;
       }
     }
-    this.http.get<number>("https://localhost:8080/countReqs").subscribe((val) => {
+    this.http.get<number>("https://localhost:8443/countReqs").subscribe((val) => {
       this.id = val++;
       const cabdata = {
         cabid: this.id,
@@ -521,7 +521,7 @@ export class InsertcabdetailsComponent implements OnInit {
       } else if (passeng! > agesArr!.length || passeng! < agesArr!.length) {
         document.getElementById("errormsg")!.innerHTML = "Incorrect amount of passengers"
       } else if ((if4 && passeng! <= 4) || (!if4 && passeng! <= 3)) {
-        this.http.post("https://localhost:8080/insertCabDetails",
+        this.http.post("https://localhost:8443/insertCabDetails",
           cabdata, { responseType: "text" }).subscribe(() => {
             location.href = "showDetails/" + this.id
           })
