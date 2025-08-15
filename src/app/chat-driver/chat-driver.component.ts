@@ -96,16 +96,16 @@ export class ChatDriverComponent implements OnInit {
       d = this.driverUser;
     }
     clearInterval(intervalId);
-    this.http.get<Chat>(`http://localhost:8080/chate/${d}`).subscribe((val)=>{
+    this.http.get<Chat>(`https://localhost:8080/chate/${d}`).subscribe((val)=>{
       if(val != null){
         this.messages = JSON.parse(val.messages);
         this.chatId = val.chatid;
         this.getMessages();
       } else {
-        this.http.get<number>("http://localhost:8080/countChats").subscribe((val)=>{
+        this.http.get<number>("https://localhost:8080/countChats").subscribe((val)=>{
           const count = val+1;
           console.log(count)
-          this.http.post<Chat>("http://localhost:8080/newChat",{
+          this.http.post<Chat>("https://localhost:8080/newChat",{
             name:this.driverUser,
             messages:"[]",
             chatid:count,
@@ -122,7 +122,7 @@ export class ChatDriverComponent implements OnInit {
     
   }
   sendMessage() {
-    this.http.get<Chat>(`http://localhost:8080/chat/${this.chatId}`).subscribe((val)=>{
+    this.http.get<Chat>(`https://localhost:8080/chat/${this.chatId}`).subscribe((val)=>{
       const chat:Chat = val;
       let messages:Message[] = JSON.parse(chat.messages);
       const newMessage: Message = {
@@ -130,7 +130,7 @@ export class ChatDriverComponent implements OnInit {
         text: this.newMessage,
       }
       messages.push(newMessage);
-      this.http.post("http://localhost:8080/addMsg",{
+      this.http.post("https://localhost:8080/addMsg",{
         name:chat.name,
         messages:JSON.stringify(messages),
         chatid:chat.chatid,
@@ -140,7 +140,7 @@ export class ChatDriverComponent implements OnInit {
         this.newMessage = "";
       })
     });
-    /*this.http.post("http://localhost:8080/addMsg",{
+    /*this.http.post("https://localhost:8080/addMsg",{
       chatid:this.chatId,
       message:this.newMessage,
       name:this.driverUser
@@ -156,7 +156,7 @@ export class ChatDriverComponent implements OnInit {
     this.messages = [];
     this.chatId = -1;
     clearInterval(this.interval1);
-    this.http.get(`http://localhost:8080/endChat/${this.id}`).subscribe((val)=>{
+    this.http.get(`https://localhost:8080/endChat/${this.id}`).subscribe((val)=>{
 
     });
   }

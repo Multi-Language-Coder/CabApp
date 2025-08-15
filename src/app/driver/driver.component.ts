@@ -79,7 +79,7 @@ export class DriverComponent implements AfterViewInit {
             lng: position.coords.longitude,
           };
           this.http
-            .get<User>("http://localhost:8080/user1/" + username)
+            .get<User>("https://localhost:8080/user1/" + username)
             .subscribe((val) => {
               this.userdata = val;
               this.http
@@ -95,7 +95,7 @@ export class DriverComponent implements AfterViewInit {
                   }
                 });
               this.http
-                .put("http://localhost:8080/users", {
+                .put("https://localhost:8080/users", {
                   id: val.id,
                   name: val.name,
                   username: val.username,
@@ -156,7 +156,7 @@ export class DriverComponent implements AfterViewInit {
    * Geocodes an address using Nominatim with robust error handling
    */
   private geocodeAddress(address: string): Observable<NominatimGeocoder[]> {
-    const url = `http://localhost:8080/api/searchGeo`;
+    const url = `https://localhost:8080/api/searchGeo`;
     return this.http.post<NominatimGeocoder[]>(url, {
       address: address
     })
@@ -167,7 +167,7 @@ export class DriverComponent implements AfterViewInit {
    * Reverse geocodes coordinates using Nominatim with robust error handling
    */
   private reverseGeocode(lat: number, lon: number): Observable<NominatimAddress> {
-    const url = `http://localhost:8080/api/reverseGeo`;
+    const url = `https://localhost:8080/api/reverseGeo`;
     return this.http.post<NominatimAddress>(url, {
       lat: lat,
       lon: lon,
@@ -476,7 +476,7 @@ export class DriverComponent implements AfterViewInit {
           alert("You've already accepted this request");
         } else {
           const pushDriver = this.http
-            .post<string>("http://localhost:8080/pushDriver", {
+            .post<string>("https://localhost:8080/pushDriver", {
               username: this.userdata.username,
               id: parseInt(acceptBtn?.parentElement?.parentElement!.id!),
             })
@@ -485,7 +485,7 @@ export class DriverComponent implements AfterViewInit {
             });
           const acceptReq = this.http
             .post(
-              `http://localhost:8080/accepted/${acceptBtn!.parentElement!.parentElement!.id
+              `https://localhost:8080/accepted/${acceptBtn!.parentElement!.parentElement!.id
               }`,
               {
                 driver: this.username,
@@ -506,7 +506,7 @@ export class DriverComponent implements AfterViewInit {
       denyBtn!.addEventListener("click", () => {
         const deny = this.http
           .get(
-            "http://localhost:8080/denied/" +
+            "https://localhost:8080/denied/" +
             denyBtn!.parentElement!.parentElement!.id,
             {
               responseType: "text"
@@ -518,7 +518,7 @@ export class DriverComponent implements AfterViewInit {
           });
         const chat = this.http
           .delete(
-            "http://localhost:8080/chat/" +
+            "https://localhost:8080/chat/" +
             denyBtn!.parentElement!.parentElement!.id
           )
           .subscribe(() => {

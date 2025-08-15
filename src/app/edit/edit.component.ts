@@ -84,7 +84,7 @@ export class EditComponent {
       console.log(this.currentpage==this.numofpages)
   }
   loadData() {
-    this.http.get<Cabdata[]>("http://localhost:8080/getCabDetails").subscribe((cabdata) => {
+    this.http.get<Cabdata[]>("https://localhost:8080/getCabDetails").subscribe((cabdata) => {
       let i = 1;
       for(let cabdata1 of cabdata){
         if(cabdata1.userrequested == this.user){
@@ -113,7 +113,7 @@ export class EditComponent {
     })
   }
   delete(id: number) {
-    this.http.delete(`http://localhost:8080/cab/${id}`,{responseType:'text'}).subscribe((val) => {
+    this.http.delete(`https://localhost:8080/cab/${id}`,{responseType:'text'}).subscribe((val) => {
       let divmsg = document.getElementById("divMsg");
       let msg = document.getElementById("msg");
       let span = document.createElement("span");
