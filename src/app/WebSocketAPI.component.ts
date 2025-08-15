@@ -18,7 +18,9 @@ export class WebSocketAPI {
         if (!this.connectionPromise) {
             this.connectionPromise = new Promise<void>((resolve, reject) => {
                 console.log("Initialize WebSocket Connection");
-                let ws = new SockJS(this.webSocketEndPoint);
+                let ws = new SockJS(this.webSocketEndPoint, null, {
+  transports: ['websocket', 'xhr-streaming', 'xhr-polling']
+});
                 this.stompClient = Stomp.over(ws);
                 const _this = this;
                 this.topic = topic;
