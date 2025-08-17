@@ -238,64 +238,6 @@ export class DriverComponent implements AfterViewInit {
     });
   }
 
-  initializeMap(): void {
-    this.webSocket = new WebSocketAPI();
-    this.webSocket._connect("/topic/cabdatas");
-
-    const mapOptions: google.maps.MapOptions = {
-      center: { lat: 37.7749, lng: -122.4194 },
-      zoom: 12,
-      mapId: "cbd7521b6e5865e3",
-    };
-
-    this.map = new google.maps.Map(
-      document.getElementById("googleMap") as HTMLElement,
-      mapOptions
-    );
-
-    this.directionsRenderer = new google.maps.DirectionsRenderer({
-      polylineOptions: {
-        strokeColor: "black",
-        strokeWeight: 5,
-      },
-      suppressMarkers: true,
-    });
-    this.directionsService = new google.maps.DirectionsService();
-    this.geocoder = new google.maps.Geocoder();
-
-    const driverIcon = document.createElement("div");
-    const fromIcon = document.createElement("div");
-    const toIcon = document.createElement("div");
-    driverIcon.innerHTML =
-      '<img src="https://th.bing.com/th/id/OIP.BdbURboW0OPBC6MQ2-Ow9gHaHa?rs=1&pid=ImgDetMain" width="32" height="32"/>';
-    fromIcon.innerHTML =
-      '<img src="https://www.freeiconspng.com/uploads/location-icon-24.png" width="32" height="32"/>';
-    toIcon.innerHTML =
-      '<img src="https://th.bing.com/th?id=OIP.V3N4LZrrSLNgG5hGB0kqCgHaHa&w=250&h=250&c=8&rs=1&qlt=90&o=6&pid=3.1&rm=2" width="32" height="32"/>';
-
-    // Initialize markers with custom icons
-    this.driverMarker = new google.maps.marker.AdvancedMarkerElement({
-      map: this.map,
-      position: { lat: this.location.lat, lng: this.location.lng },
-      title: "Driver Location",
-      content: driverIcon,
-    });
-
-    this.fromMarker = new google.maps.marker.AdvancedMarkerElement({
-      map: this.map,
-      title: "From Location",
-      content: fromIcon,
-    });
-
-    this.toMarker = new google.maps.marker.AdvancedMarkerElement({
-      map: this.map,
-      title: "To Location",
-      content: toIcon,
-    });
-
-    //setTimeout(() => setInterval(() => this.fetchCabData(), 3000), 1500);
-  }
-
   fetchCabData(L: typeof import("leaflet")): void {
     let username = "";
     const cookies = document.cookie.split(";");
