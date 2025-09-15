@@ -16,6 +16,8 @@ import {
   NominatimDistanceMatrix,
   NominatimGeocoder,
 } from "../show-details/show-details.component";
+import { environment } from "../../environments/environment";
+import { IFeature, IFeatureV2 } from "../../environments/geoapify.interface";
 @Component({
   selector: "app-driver",
   standalone: false,
@@ -67,7 +69,7 @@ export class DriverComponent implements AfterViewInit {
           this.reverseGeocode(position.coords.latitude, position.coords.longitude)
             .subscribe({
               next: (val) => {
-                this.location.location = this.formatAddress(val["address"]);
+                this.location.location = this.formatAddress(val);
               },
               error: (error) => {
                 console.error('Failed to reverse geocode current position:', error);
@@ -79,7 +81,7 @@ export class DriverComponent implements AfterViewInit {
             lng: position.coords.longitude,
           };
           this.http
-            .get<User>("https://localhost:8443/user1/" + username)
+            .get<User>(environment.apiBaseUrl + "user1/" + username)
             .subscribe((val) => {
               this.userdata = val;
               this.http
@@ -95,7 +97,7 @@ export class DriverComponent implements AfterViewInit {
                   }
                 });
               this.http
-                .put("https://localhost:8443/users", {
+                .put(environment.apiBaseUrl + "users", {
                   id: val.id,
                   name: val.name,
                   username: val.username,
@@ -155,24 +157,19 @@ export class DriverComponent implements AfterViewInit {
   /**
    * Geocodes an address using Nominatim with robust error handling
    */
-  private geocodeAddress(address: string): Observable<NominatimGeocoder[]> {
-    const url = `https://localhost:8443/api/searchGeo`;
-    return this.http.post<NominatimGeocoder[]>(url, {
-      address: address
-    })
+  private geocodeAddress(address: string): Observable<IFeatureV2> {
+    const url = `https://api.geoapify.com/v1/geocode/search?name=${address}&format=json&apiKey=2b50b749fdf94d9a9688dd81bdeed459`;
+    return this.http.get<IFeatureV2>(url)
     //return this.makeNominatimRequest<NominatimGeocoder[]>(url);
   }
 
   /**
    * Reverse geocodes coordinates using Nominatim with robust error handling
    */
-  private reverseGeocode(lat: number, lon: number): Observable<NominatimAddress> {
-    const url = `https://localhost:8443/api/reverseGeo`;
-    return this.http.post<NominatimAddress>(url, {
-      lat: lat,
-      lon: lon,
-      typeFind: false
-    })//this.makeNominatimRequest<NominatimAddress>(url);
+  private reverseGeocode(lat: number, lon: number): Observable<IFeature> {
+    const url = environment.apiBaseUrl + `api/reverseGeo`;
+    const url1 = `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&format=json&apiKey=2b50b749fdf94d9a9688dd81bdeed459`
+    return this.http.get<IFeature>(url1)//this.makeNominatimRequest<NominatimAddress>(url);
   }
 
   moveDriver() {
@@ -193,7 +190,11 @@ export class DriverComponent implements AfterViewInit {
             const toggleButton = document.getElementById("toggleSidebar");
             const sidebar = document.getElementById("sidebar1");
             const mainContent = document.getElementById("main-content");
-
+            const iconDefault = leafletModule.icon({
+              iconUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtc7mVH6hZXg3rdikngiEd_y734KZtGF51OQ&s",
+              iconSize: [50, 70]
+            })
+            leafletModule.Marker.prototype.options.icon = iconDefault;
             toggleButton?.addEventListener("click", () => {
               sidebar?.classList.toggle("collapsed");
               mainContent?.classList.toggle("collapsed");
@@ -201,24 +202,53 @@ export class DriverComponent implements AfterViewInit {
 
             // Debouncing logic to prevent excessive API calls
             this.geocodeSubject.pipe(
-              debounce(() => timer(2000)), // Wait for 1 second after the last event
+              debounce(() => timer(3000)), // Wait for 1 second after the last event
               switchMap(cabdatas => this.processCabDatas(cabdatas))
             ).subscribe(processedRequests => {
+              //this.map.removeControl(this.routingControl)
+              processedRequests.forEach((cabdata) => {
+                const op = this.userrequests.includes(cabdata);
+                if (op == false) {
+                  this.userrequests.push(cabdata)
+                }
+              })
+
+              // Let's assume this is inside the method where you get 'processedRequests'
+
+              // Create a new array with the calculated price property
+              const requestsWithPrice = processedRequests.map(req => {
+                // Run the calculation here, ONCE.
+                const price = this.calculatePricing(req);
+
+                // Return a new object that includes the price
+                // The pullAsync suggests the price might be an Observable or Promise
+                return {
+                  ...req, // Copy all original properties from the request
+                  calculatedPrice: this.pullAsync(price) // Store the async result
+                };
+              });
+
+              // Now, assign this pre-processed array to userrequests
+              this.userrequests = requestsWithPrice;
+
+              /*for(let req of processedRequests){
+                console.log(req);
+              }
               const processedRequestIds = new Set(processedRequests.map(req => req.id));
 
               this.userrequests = this.userrequests.filter(req => processedRequestIds.has(req.id));
-
-              // Step 2: Add new requests from processedRequests that are not already in this.userrequests
               const existingRequestIds = new Set(this.userrequests.map(req => req.id));
-
               const newRequests = processedRequests.filter(req => !existingRequestIds.has(req.id));
 
               this.userrequests.push(...newRequests);
+              */
 
-              console.log("Updated User Requests", this.userrequests);
+              /*console.log("Updated User Requests", this.userrequests);
               // It's important to have 'L' available here.
               // A more robust solution might pass it through the stream or store it as a class property.
               this.addPostMapEventListeners(leafletModule);
+              // Step 2: Add new requests from processedRequests that are not already in this.userrequests
+              */
             });
           })
         })
@@ -226,10 +256,41 @@ export class DriverComponent implements AfterViewInit {
 
     }
   }
+  pullAsync(returnVal: Promise<any>): any {
+    returnVal.then((result) => {
+      return result
+    })
+  }
+  async calculatePricing(data: Cabdata) {
+    this.geocodeAddress(data.fromLocation).subscribe(fromLoc => {
+      this.geocodeAddress(data.toLocation).subscribe(async toLoc => {
+        const body = {
+          "mode": "drive",
+          "sources": [
+            { "location": [fromLoc.results[0].lon, fromLoc.results[0].lat] },
+          ],
+          "targets": [
+            { "location": [toLoc.results[0].lon, toLoc.results[0].lat] }
+          ]
+        };
+        this.http.post<MatrixResponse>("https://api.geoapify.com/v1/routematrix?apiKey=2b50b749fdf94d9a9688dd81bdeed459", body).pipe(
+          debounce(() => timer(3000))
+        ).subscribe((response) => {
+          const price = new Price(response["sources_to_targets"][0][0].distance, this.tax);
+          return price.getEstFare();
+        });
+      })
+      return 0;
+    })
+    return 0;
+  }
 
   initMap(L: typeof import("leaflet")): void {
     this.webSocket = new WebSocketAPI();
-    this.map = L.map("googleMap").setView([39.8333, -98.5833], 4);
+    const map = L.map("googleMap").setView([39.8333, -98.5833], 4);
+    /*const markerGroup = new L.LayerGroup();
+    markerGroup.addTo(map);*/
+    this.map = map;
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors",
     }).addTo(this.map);
@@ -255,6 +316,7 @@ export class DriverComponent implements AfterViewInit {
 
     this.webSocket._send("/app/cabdatas").then((val) => {
       const cabdatas: Cabdata[] = JSON.parse(String(val)) as Cabdata[];
+      console.log(cabdatas)
       if (cabdatas === null) {
         return;
       }
@@ -277,70 +339,26 @@ export class DriverComponent implements AfterViewInit {
       }
 
       try {
-        // Use robust geocoding with proper error handling and delays
-        if (this.userrequests.includes(cabdata)) {
-          return null
-        } else {
-          //let i = this.userrequests.push(cabdata)
-          console.log(this.userrequests)
-          this.geocodeAddress(cabdata.fromLocation).subscribe({
-            next: (fromCoords) => {
-              if (fromCoords && fromCoords.length > 0) {
-                // Add delay between requests to respect rate limits
-                setTimeout(() => {
-                  this.geocodeAddress(cabdata.toLocation).subscribe({
-                    next: (toCoords) => {
-                      if (toCoords && toCoords.length > 0) {
-                        this.http.post<NominatimDistanceMatrix>(
-                          `https://api.geoapify.com/v1/routematrix?apiKey=2b50b749fdf94d9a9688dd81bdeed459`,
-                          {
-                            mode: "drive",
-                            sources: [{ location: [fromCoords[0].lon, fromCoords[0].lat] }],
-                            targets: [{ location: [toCoords[0].lon, toCoords[0].lat] }],
-                            units: "metric",
-                          }
-                        ).subscribe({
-                          next: (distanceData) => {
-                            const oldCabdata = cabdata;
-                            const index = cabdatas.indexOf(oldCabdata);
-                            const price = new Price(distanceData.sources_to_targets[0][0].distance, 1 + this.tax);
-                            cabdata.pricing = price.getEstFare();
-                            cabdatas[index] = cabdata;
-
-                            //newCabdata.push(cabdata)
-                          },
-                          error: (error) => {
-                            console.error("Error calculating distance for cab request:", cabdata.cabid, error);
-                          }
-                        });
-                      } else {
-                        console.warn("No coordinates found for destination:", cabdata.toLocation);
-                      }
-                    },
-                    error: (error) => {
-                      console.error("Error geocoding destination for cab request:", cabdata.cabid, error);
-                    }
-                  });
-                }, 1000); // 1 second delay between geocoding requests
-              } else {
-                console.warn("No coordinates found for origin:", cabdata.fromLocation);
-              }
-            },
-            error: (error) => {
-              console.error("Error geocoding origin for cab request:", cabdata.cabid, error);
-            }
-          });
-        }
       } catch (error) {
         console.error("Error fetching data for cab request:", cabdata.cabid, error);
         return null;
       }
       return null;
     });
-
+    console.log(cabdatas)
     return of(cabdatas.filter(cabdata => cabdata.fromLocation.includes(this.userdata.town) && cabdata.fromLocation.includes(this.userdata.state)))
   }
-
+  routingControl!: any;
+  confirmText: string = ""
+  sendConfirmMessage(text: string): void {
+    const mssgBox = document.getElementById("messageBox");
+    this.confirmText = text;
+    mssgBox!.style.display = "block";
+    setTimeout(() => {
+      mssgBox!.style.display = "none";
+      this.confirmText = "";
+    }, 5000)
+  }
   addPostMapEventListeners(L: typeof import("leaflet")): void {
     const postMapBtns = document.getElementsByClassName("postMap");
     const acceptBtns = document.getElementsByClassName("acceptRequest");
@@ -376,7 +394,7 @@ export class DriverComponent implements AfterViewInit {
                   toLoc.results[0].lat,
                   toLoc.results[0].lon
                 );
-                L.Routing.control({
+                this.routingControl = L.Routing.control({
                   waypoints: [
                     latLngDriver,
                     fromLocLatLng,
@@ -418,7 +436,7 @@ export class DriverComponent implements AfterViewInit {
           alert("You've already accepted this request");
         } else {
           const pushDriver = this.http
-            .post<string>("https://localhost:8443/pushDriver", {
+            .post<string>(environment.apiBaseUrl + "pushDriver", {
               username: this.userdata.username,
               id: parseInt(acceptBtn?.parentElement?.parentElement!.id!),
             })
@@ -427,7 +445,7 @@ export class DriverComponent implements AfterViewInit {
             });
           const acceptReq = this.http
             .post(
-              `https://localhost:8443/accepted/${acceptBtn!.parentElement!.parentElement!.id
+              environment.apiBaseUrl + `accepted/${acceptBtn!.parentElement!.parentElement!.id
               }`,
               {
                 driver: this.username,
@@ -439,16 +457,14 @@ export class DriverComponent implements AfterViewInit {
             )
             .subscribe(() => {
               acceptReq.unsubscribe();
-              setTimeout(() => {
-                location.reload();
-              }, 600);
+              this.sendConfirmMessage("Request Sent")
             });
         }
       });
       denyBtn!.addEventListener("click", () => {
         const deny = this.http
           .get(
-            "https://localhost:8443/denied/" +
+            environment.apiBaseUrl + "denied/" +
             denyBtn!.parentElement!.parentElement!.id,
             {
               responseType: "text"
@@ -460,7 +476,7 @@ export class DriverComponent implements AfterViewInit {
           });
         const chat = this.http
           .delete(
-            "https://localhost:8443/chat/" +
+            environment.apiBaseUrl + "chat/" +
             denyBtn!.parentElement!.parentElement!.id
           )
           .subscribe(() => {
@@ -478,7 +494,7 @@ export class DriverComponent implements AfterViewInit {
   directionsRenderer!: google.maps.DirectionsRenderer;
   directionsService!: google.maps.DirectionsService;
   directionsRenderer1!: google.maps.DirectionsRenderer;
-  private map!: any;
+  private map!: L.Map;
   location: Location = {
     lat: 0,
     lng: 0,
@@ -489,11 +505,11 @@ export class DriverComponent implements AfterViewInit {
   username: string = "";
   tax: number = 0;
 
-  private formatAddress(address: NominatimAddress["address"]): string {
+  private formatAddress(address: IFeature): string {
     const parts: string[] = [];
 
-    const streetNumber = address!.house_number;
-    const streetName = address!.road || address!.footway;
+    const streetNumber = address!.housenumber;
+    const streetName = address!.street;
     if (streetName) {
       parts.push(`${streetNumber ? streetNumber + " " : ""}${streetName}`);
     } else if (streetNumber) {
@@ -501,11 +517,7 @@ export class DriverComponent implements AfterViewInit {
     }
 
     const city =
-      address!.city ||
-      address!.town ||
-      address!.village ||
-      address!["hamlet"] ||
-      address!.suburb;
+      address!.city;
     const state = address!.state;
     const postcode = address!.postcode;
 
@@ -555,5 +567,25 @@ interface resultv2 {
   formatted: string;
   lat: number;
   lon: number;
+}
+interface LocationV2 {
+  original_location: number[];
+  location: number[];
+}
+
+interface SourcesToTarget {
+  distance: number;
+  time: number;
+  source_index: number;
+  target_index: number;
+}
+
+interface MatrixResponse {
+  sources: LocationV2[];
+  targets: LocationV2[];
+  sources_to_targets: SourcesToTarget[][];
+  units: string;
+  distance_units: string;
+  mode: string;
 }
 //Port Number:54.211.241.95

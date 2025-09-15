@@ -10,6 +10,9 @@
 </head>
 
 <body>
+    <div class="alert alert-info" style="display:none;" id="messageBox">
+        {{confirmText}}
+    </div>
     <div id="sidebar1" class="collapsed">
         <button id="toggleSidebar" class="btn btn-dark">☰</button>
         <div id="sidebar-header">Chat Driver</div>
@@ -48,12 +51,12 @@
                 <th>Deny</th>
             </thead>
             <tbody>
-                    @for(request of userrequests; track userrequests.values()){
+                    @for(request of userrequests; track request.cabid){
                         <tr id="{{request.cabid}}">
                     <td>{{request.userrequested}}</td>
                     <td>{{request.fromLocation}}</td>
                     <td>{{request.toLocation}}</td>
-                    <td>${{request.pricing}}</td>
+                    <td>${{pullAsync(calculatePricing(request))}}</td>
                     <td><button class="btn btn-dark postMap">Post Map</button></td>
                     <td><button class="btn btn-success acceptRequest" id="{{request.accepted}}">Accept</button></td>
                     <td><button class="btn btn-danger denyRequest" id="{{request.accepted}}">Deny</button></td>

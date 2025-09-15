@@ -12,5 +12,7 @@ export interface Cabdata{
     accepted:string,
     status:string,
     pricing?:number,
-    chatAv?:boolean
+    chatAv?:boolean,
+    fromLoc?:number[],
+    toLoc?:number[]
 }

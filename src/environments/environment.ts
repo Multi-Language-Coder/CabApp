@@ -1,9 +1,7 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://localhost:8080',
-  googleMapsApiKey: 'AIzaSyBUkPRQqcYPM_uRQjr0cb0W0P6_ri2DvvA',
-  wsBaseUrl: 'ws://localhost:8080',
-  publicKey:"0Y4trngEWAjCDcy6e",
+  apiBaseUrl: 'https://54.211.241.95:8443/',
+  googleMapsApiKey: 'AIzaSyBUkPRQqcYPM_uRQjr0cb0W0P6_ri2DvvA',  publicKey:"0Y4trngEWAjCDcy6e",
   serviceId:"service_h6spl18",
   templateId:"template_nm9pdow",
   firebase:{

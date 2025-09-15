@@ -4,6 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { User } from '../../environments/user.interface';
 import { ActivatedRoute } from '@angular/router';
 import { Cabdata } from '../../environments/cabdata.interface';
+import { environment } from '../../environments/environment';
 @Component({
   selector: 'app-edit',
   templateUrl: './edit.component.html',
@@ -84,7 +85,7 @@ export class EditComponent {
       console.log(this.currentpage==this.numofpages)
   }
   loadData() {
-    this.http.get<Cabdata[]>("https://localhost:8443/getCabDetails").subscribe((cabdata) => {
+    this.http.get<Cabdata[]>(environment.apiBaseUrl+"getCabDetails").subscribe((cabdata) => {
       let i = 1;
       for(let cabdata1 of cabdata){
         if(cabdata1.userrequested == this.user){
@@ -113,7 +114,7 @@ export class EditComponent {
     })
   }
   delete(id: number) {
-    this.http.delete(`https://localhost:8443/cab/${id}`,{responseType:'text'}).subscribe((val) => {
+    this.http.delete(environment.apiBaseUrl+`cab/${id}`,{responseType:'text'}).subscribe((val) => {
       let divmsg = document.getElementById("divMsg");
       let msg = document.getElementById("msg");
       let span = document.createElement("span");

@@ -3,9 +3,10 @@ import SockJS from 'sockjs-client';
 import { WebsockettestComponent } from './websockettest/websockettest.component';
 import { Observable, Subject } from 'rxjs';
 import { Type } from '@angular/core';
+import { environment } from '../environments/environment';
 export class WebSocketAPI {
     StompWithNoDebug = Stomp;
-    webSocketEndPoint: string = 'https://localhost:8443/ws';
+    webSocketEndPoint: string = environment.apiBaseUrl+"ws";
     topic!: string;
     stompClient!: Stomp.Client;
     result: any;

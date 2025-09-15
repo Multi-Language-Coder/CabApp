@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Cabdata } from '../../environments/cabdata.interface';
 import { Chat, Message } from '../../environments/chat.interface';
 import { User } from '../../environments/user.interface';
+import { environment } from '../../environments/environment';
 @Component({
   selector: 'app-chat-driver',
   standalone: false,
@@ -96,16 +97,16 @@ export class ChatDriverComponent implements OnInit {
       d = this.driverUser;
     }
     clearInterval(intervalId);
-    this.http.get<Chat>(`https://localhost:8443/chate/${d}`).subscribe((val)=>{
+    this.http.get<Chat>(environment.apiBaseUrl+`chate/${d}`).subscribe((val)=>{
       if(val != null){
         this.messages = JSON.parse(val.messages);
         this.chatId = val.chatid;
         this.getMessages();
       } else {
-        this.http.get<number>("https://localhost:8443/countChats").subscribe((val)=>{
+        this.http.get<number>(environment.apiBaseUrl+"countChats").subscribe((val)=>{
           const count = val+1;
           console.log(count)
-          this.http.post<Chat>("https://localhost:8443/newChat",{
+          this.http.post<Chat>(environment.apiBaseUrl+"newChat",{
             name:this.driverUser,
             messages:"[]",
             chatid:count,
@@ -122,7 +123,7 @@ export class ChatDriverComponent implements OnInit {
     
   }
   sendMessage() {
-    this.http.get<Chat>(`https://localhost:8443/chat/${this.chatId}`).subscribe((val)=>{
+    this.http.get<Chat>(environment.apiBaseUrl+`chat/${this.chatId}`).subscribe((val)=>{
       const chat:Chat = val;
       let messages:Message[] = JSON.parse(chat.messages);
       const newMessage: Message = {
@@ -130,7 +131,7 @@ export class ChatDriverComponent implements OnInit {
         text: this.newMessage,
       }
       messages.push(newMessage);
-      this.http.post("https://localhost:8443/addMsg",{
+      this.http.post(environment.apiBaseUrl+"addMsg",{
         name:chat.name,
         messages:JSON.stringify(messages),
         chatid:chat.chatid,
@@ -140,7 +141,7 @@ export class ChatDriverComponent implements OnInit {
         this.newMessage = "";
       })
     });
-    /*this.http.post("https://localhost:8443/addMsg",{
+    /*this.http.post(environment.apiBaseUrl+"addMsg",{
       chatid:this.chatId,
       message:this.newMessage,
       name:this.driverUser
@@ -156,7 +157,7 @@ export class ChatDriverComponent implements OnInit {
     this.messages = [];
     this.chatId = -1;
     clearInterval(this.interval1);
-    this.http.get(`https://localhost:8443/endChat/${this.id}`).subscribe((val)=>{
+    this.http.get(environment.apiBaseUrl+`endChat/${this.id}`).subscribe((val)=>{
 
     });
   }

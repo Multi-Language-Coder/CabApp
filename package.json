@@ -25,6 +25,7 @@
     "@angular/ssr": "^19.0.7",
     "@auth0/angular-jwt": "^5.2.0",
     "@emailjs/browser": "^4.4.1",
+    "@googlemaps/google-maps-services-js": "^3.4.2",
     "@stomp/stompjs": "^7.1.1",
     "chalk": "^5.4.1",
     "dotenv": "^16.4.7",

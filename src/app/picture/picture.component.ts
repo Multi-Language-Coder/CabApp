@@ -5,6 +5,7 @@ import { FormControl } from '@angular/forms';
 import { CarModel } from '../../environments/carmodel.interface';
 import { Region } from '../../environments/region.interface';
 import { NgxCsvParser, NgxCSVParserError } from 'ngx-csv-parser';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-picture',
@@ -52,7 +53,7 @@ username:String = ""
       }
     }
     this.username = username;
-    this.http.get<User>(`http://3.80.129.158:8080/user1/${username}`).subscribe((userDetails)=>{
+    this.http.get<User>(environment.apiBaseUrl+`user1/${username}`).subscribe((userDetails)=>{
       this.name.setValue(userDetails.name);
       this.description.setValue(userDetails.description);
       if(userDetails.isDriver == true){
@@ -147,7 +148,7 @@ username:String = ""
     });
     
 
-    this.http.get<User>(`http://3.80.129.158:8080/user1/${username}`).subscribe((val) => {
+    this.http.get<User>(environment.apiBaseUrl+`user1/${username}`).subscribe((val) => {
       this.user = val;
       if (val.isDriver) {
         const div = document.createElement("div");
@@ -273,12 +274,12 @@ username:String = ""
         break;
       }
     }
-      this.http.post<boolean>("http://3.80.129.158:8080/checkPassword",{
+      this.http.post<boolean>(environment.apiBaseUrl+"checkPassword",{
         username:username,
         password:this.prevPassword.value
       }).subscribe((val:boolean)=>{
         if(val){
-          this.http.get<User>(`http://3.80.129.158:8080/user1/${username}`).subscribe((val) => {
+          this.http.get<User>(environment.apiBaseUrl+`user1/${username}`).subscribe((val) => {
             val.name=this.name.value!;
             val.imageLink = image!;
             if(this.user.isDriver){
@@ -290,8 +291,8 @@ username:String = ""
             val.description = this.description.value!;
             val.imageLink = this.username+".jpg";
             console.log(val);
-            this.http.put("http://3.80.129.158:8080/users", val).subscribe(() => {
-              this.http.post("http://3.80.129.158:8080/upload",formData).subscribe(()=>{
+            this.http.put(environment.apiBaseUrl+"users", val).subscribe(() => {
+              this.http.post(environment.apiBaseUrl+"upload",formData).subscribe(()=>{
                 alert("Successfully added photo")
                 location.href = "/profilePage"
               })

@@ -9,6 +9,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { result } from '../driver/driver.component';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { AutocompleteAddressService, NominatimAddress } from '../autocomplete-address.service';
+import { environment } from '../../environments/environment';
 @Component({
   selector: 'app-update',
   standalone: false,
@@ -35,7 +36,7 @@ export class UpdateComponent {
     private addressService:AutocompleteAddressService,private googleMapsService: GoogleMapsService, private route: ActivatedRoute, private http: HttpClient, @Inject(PLATFORM_ID) private platformId: Object) {
     this.route.params.subscribe(params => {
       this.cabid = params['id'];
-      this.http.get("http://54.211.241.95:8080/cab/" + params['id']).subscribe((val) => {
+      this.http.get(environment.apiBaseUrl+"cab/" + params['id']).subscribe((val) => {
         let vals = Object.values(val)
         this.fromLocation.setValue(vals[0]);
         this.toLocation.setValue(vals[1]);
@@ -117,6 +118,10 @@ export class UpdateComponent {
             //this.L = leafletModule;
             import("leaflet-routing-machine").then(()=>{
               import("leaflet-control-geocoder").then(()=>{
+                const iconDefault = leafletModule.icon({
+              iconUrl:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtc7mVH6hZXg3rdikngiEd_y734KZtGF51OQ&s",
+            })
+            leafletModule.Marker.prototype.options.icon = iconDefault;
                 this.initializeMap(leafletModule);
               });
             });
@@ -388,7 +393,7 @@ export class UpdateComponent {
       document.getElementById("errormsg")!.innerHTML = "Incorrect amount of passengers"
     } else if ((if4 && passeng! <= 4) || (!if4 && passeng! <= 3)) {
       const body = { 'cabid': this.cabid, 'fromLocation': (document.getElementById("FromLocationInput") as HTMLInputElement).value, 'toLocation': (document.getElementById("ToLocationInput") as HTMLInputElement).value, 'date': this.date.value, 'time': this.time.value, "numpassengers": this.numpassengers.value, "ages": agesArr, 'userrequested': this.userrequested }
-      this.http.put("http://54.211.241.95:8080/insertCabDetails", body, { responseType: 'text' }).subscribe((val) => {
+      this.http.put(environment.apiBaseUrl+"insertCabDetails", body, { responseType: 'text' }).subscribe((val) => {
         document.getElementById("divMsg")?.setAttribute("style", "display:none;background-color: lightskyblue; color:blue;");
         let span = document.createElement("span")
         span.innerHTML = "Successfully updated cab details, being sent back to edit page in 5 sec";

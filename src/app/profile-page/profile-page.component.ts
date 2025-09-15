@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { User } from '../../environments/user.interface';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-profile-page',
@@ -42,10 +43,10 @@ export class ProfilePageComponent {
       }
     }
     console.log(username)
-    this.http.get<User>(`http://3.80.129.158:8080/user1/${this.username}`).subscribe((val)=>{
+    this.http.get<User>(environment.apiBaseUrl+`user1/${this.username}`).subscribe((val)=>{
       val.password = "*************"
       this.user = val;
-      this.http.get(`http://3.80.129.158:8080/image/${val.imageLink}`,{responseType:"blob"}).subscribe(val => {
+      this.http.get(environment.apiBaseUrl+`image/${val.imageLink}`,{responseType:"blob"}).subscribe(val => {
         this.imageLink = URL.createObjectURL(val);
       })
       this.driver = val.isDriver;

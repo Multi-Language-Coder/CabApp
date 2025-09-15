@@ -10,6 +10,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { geocoders } from 'leaflet-control-geocoder';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { AutocompleteAddressService, NominatimAddress } from '../autocomplete-address.service';
+import { environment } from '../../environments/environment';
 @Component({
   selector: 'app-insertcabdetails',
   standalone: false,
@@ -272,7 +273,11 @@ export class InsertcabdetailsComponent implements OnInit {
           import('leaflet-control-geocoder').then(() => {
 
             document.getElementById("tryRoute")!.addEventListener("click", () => {
-
+              const iconDefault = leaflet.icon({
+              iconUrl:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtc7mVH6hZXg3rdikngiEd_y734KZtGF51OQ&s",
+            })
+            console.log("SPAM")
+            leaflet.Marker.prototype.options.icon = iconDefault;
               this.addRouting(leaflet);
 
             })
@@ -437,7 +442,7 @@ export class InsertcabdetailsComponent implements OnInit {
             map:map,
             position:{lat:pos.lat,lng:pos.lng}
           })
-          this.http.get<User[]>("https://localhost:8443/getDrivers").subscribe((val) => {
+          this.http.get<User[]>(environment.apiBaseUrl+"getDrivers").subscribe((val) => {
            const drivers = val;
            const debug:any = {
            }
@@ -502,7 +507,7 @@ export class InsertcabdetailsComponent implements OnInit {
         break;
       }
     }
-    this.http.get<number>("https://localhost:8443/countReqs").subscribe((val) => {
+    this.http.get<number>(environment.apiBaseUrl+"countReqs").subscribe((val) => {
       this.id = val++;
       const cabdata = {
         cabid: this.id,
@@ -521,7 +526,7 @@ export class InsertcabdetailsComponent implements OnInit {
       } else if (passeng! > agesArr!.length || passeng! < agesArr!.length) {
         document.getElementById("errormsg")!.innerHTML = "Incorrect amount of passengers"
       } else if ((if4 && passeng! <= 4) || (!if4 && passeng! <= 3)) {
-        this.http.post("https://localhost:8443/insertCabDetails",
+        this.http.post(environment.apiBaseUrl+"insertCabDetails",
           cabdata, { responseType: "text" }).subscribe(() => {
             location.href = "showDetails/" + this.id
           })

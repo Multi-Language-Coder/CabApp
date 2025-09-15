@@ -59,11 +59,11 @@ export class SignUpComponent {
       .subscribe((val) => {
         this.counties = val;
       });
-      this.http.get<number>(`${environment.apiBaseUrl}/count`).subscribe((num)=>{
+      this.http.get<number>(`${environment.apiBaseUrl}count`).subscribe((num)=>{
         this.lastIdMsg = num+1;
       })
     this.http
-      .get<number>(`${environment.apiBaseUrl}/countUsers`)
+      .get<number>(`${environment.apiBaseUrl}countUsers`)
       .subscribe((count) => {
         this.lastId = count+1;
         (
@@ -173,7 +173,7 @@ export class SignUpComponent {
 
   private registerUser() {
     this.http
-      .post("http://3.80.129.158:8080/user", {
+      .post(environment.apiBaseUrl+"user", {
         name: this.name.value,
         username: this.username.value,
         password: this.password.value,
@@ -190,7 +190,7 @@ export class SignUpComponent {
       })
       .subscribe({
         next: () => {
-          this.http.post("http://3.80.129.158:8080/userMsg",{
+          this.http.post(environment.apiBaseUrl+"userMsg",{
             name:this.name.value,
             username:this.username.value,
             password:this.password.value,

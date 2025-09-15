@@ -19,6 +19,7 @@ import { TaxState } from "../../environments/taxes.interface";
 import { Notification } from "../../environments/notifications.interface";
 import { isPlatformBrowser } from "@angular/common";
 import { GeocodeMaps } from "../insertcabdetails/insertcabdetails.component";
+import { IFeature } from "../../environments/geoapify.interface";
 @Component({
   selector: "app-show-details",
   standalone: false,
@@ -109,6 +110,10 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
         (window as any).L = leafletModule;
         import("leaflet-routing-machine").then(()=>{
           import("leaflet-control-geocoder").then(()=>{
+            const iconDefault = leafletModule.icon({
+              iconUrl:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtc7mVH6hZXg3rdikngiEd_y734KZtGF51OQ&s",
+            })
+            leafletModule.Marker.prototype.options.icon = iconDefault;
             this.initMap(leafletModule);
           })
         });
@@ -140,7 +145,7 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
     this.route.params.subscribe((params) => {
       this.id = parseInt(params["id"]);
       this.http
-        .get<Cabdata>("https://localhost:8443/cab/" + this.id)
+        .get<Cabdata>(environment.apiBaseUrl+"cab/" + this.id)
         .subscribe((val) => {
           this.cabdata = val;
           console.log(this.cabdata);
@@ -352,13 +357,13 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
       "+"
     )}&format=json`;
     this.http
-      .get<NominatimGeocoder[]>(
-        `https://nominatim.openstreetmap.org/search?${fromLocation}`
+      .get<IFeature[]>(
+        `https://api.geoapify.com/v1/geocode/search?$search=${fromLocation}&format=json&apiKey=2b50b749fdf94d9a9688dd81bdeed459`
       )
       .subscribe((fromCoords) => {
         this.http
           .get<NominatimGeocoder[]>(
-            `https://nominatim.openstreetmap.org/search?${toLocation}`
+            `https://api.geoapify.com/v1/geocode/search?$search=${toLocation}&format=json&apiKey=2b50b749fdf94d9a9688dd81bdeed459`
           )
           .subscribe((toCoords) => {
             const cabdataTime = this.cabdata.time.split(":");
@@ -932,9 +937,9 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
     this.showNotification("success", "Your driver has accepted your ride");
     cabdetails.accepted = "a2";
     this.http
-      .get<User>("https://localhost:8443/user1/" + cabdetails.driver)
+      .get<User>(environment.apiBaseUrl+"user1/" + cabdetails.driver)
       .subscribe((user) => {
-        user.imageLink = `https://localhost:8443/image/${user.imageLink}`;
+        user.imageLink = environment.apiBaseUrl+`image/${user.imageLink}`;
         this.driver = user;
       });
     this.updateCabDetails(cabdetails)
@@ -948,9 +953,9 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
   ): void {
     this.exists = true;
     this.http
-      .get<User>("https://localhost:8443/user1/" + this.cabdata.driver)
+      .get<User>(environment.apiBaseUrl+"user1/" + this.cabdata.driver)
       .subscribe((user) => {
-        user.imageLink = `https://localhost:8443/image/${user.imageLink}`;
+        user.imageLink = environment.apiBaseUrl+`image/${user.imageLink}`;
         this.driver = user;
       });
     this.getDriverLocation(map, L);
@@ -1001,7 +1006,7 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         this.http
-          .put(`https://localhost:8443/insertCabDetails`, cabdetails)
+          .put(environment.apiBaseUrl+`insertCabDetails`, cabdetails)
           .subscribe({
             next: (response) => resolve(response),
             error: (error) => reject(error),
