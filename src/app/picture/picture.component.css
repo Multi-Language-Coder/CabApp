@@ -1,44 +1,155 @@
-body{
-    background-color: grey;
+/* General Body Styling */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f0f2f5; /* Light grey background like the login page */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-h1{
+
+/* Main container for the form card */
+.content-area {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* Page Title */
+h1 {
     font-weight: bold;
+    font-size: 2em;
+    margin-top: 0;
+    margin-bottom: 30px;
+    color: #333;
 }
-canvas{
-    height:0;
-    width:0;
+
+/* Top navigation links */
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
 }
-#postPhoto{
-    display:none;
+
+.top-nav a {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: 500;
 }
-body{
-    background-color: grey;
+
+/* Form group for labels and inputs */
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
 }
-.reminder{
-    font-size:12px;
-    color:black;
+
+/* Form labels */
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
 }
-html, body {
-margin: 0;
-height: 100%;
+
+/* General styles for inputs, textareas, and selects */
+input[type="text"],
+input[type="password"],
+textarea,
+select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-size: 16px;
+    transition: border-color 0.2s;
 }
-.row{
-margin:15px;
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: #007bff;
 }
-input,textarea,select{
-border-radius: 5px;
-border: 3px black solid;
+
+/* Wrapper for password field to position the 'eye' icon */
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
 }
-select{
-font-family:cursive;
-font-size:18px;
+
+.password-wrapper input {
+    padding-right: 45px; /* Make space for the icon */
 }
-.col-form-label{
-    font-weight:bold;
+
+.password-wrapper .btn {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #888;
 }
-#errorDiv{
-    display:none;
+
+/* Reminder text styling */
+.reminder {
+    font-size: 12px;
+    color: #777;
+    text-align: left;
+    margin-top: 5px;
 }
-#error{
-    color:yellow;
+
+/* Camera and photo output styling */
+.camera, .output {
+    margin-top: 20px;
+}
+
+#video, #photo {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    max-width: 100%;
+    height: auto;
+}
+
+/* General button styling */
+.btn-submit {
+    width: 100%;
+    background-color: #2c3e50; /* Dark button color from login */
+    color: white;
+    border: none;
+    padding: 15px 0;
+    margin-top: 15px;
+    font-size: 18px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-submit:hover {
+    background-color: #3e5771;
+}
+
+.btn-submit:active {
+    transform: scale(0.98);
+}
+
+#postPhoto {
+    display: none; /* Keep this rule from your TS file logic */
+}
+
+/* Hide the canvas as it's just for processing */
+canvas {
+    display: none;
 }

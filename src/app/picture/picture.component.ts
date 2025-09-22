@@ -159,7 +159,7 @@ username:String = ""
           const csvFile = new File([new Blob([val],{type:'text/csv'})], "models.csv",{type:'text/csv'});
           this.csvParser.parse(csvFile,{header:this.header,delimiter:",",encoding:'utf8'}).pipe().subscribe((val)=>{
             this.models = (val as CarModel[]);
-            
+            console.log(this.models)
           })
         })
       }

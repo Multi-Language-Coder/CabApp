@@ -1,238 +1,86 @@
+<!DOCTYPE html>
 <html>
 <head>
-    <title></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <style>
-
-        #map{
-            height:400px;
-            width:100%;
-        }
-
-        body {
-            background-color: #121212;
-            color: #E0E0E0;
-        }
-
-        /* Sidebar Styling */
-        #sidebar1 {
-            background-color: #1E1E1E;
-            color: #E0E0E0;
-        }
-        
-        #sidebar-header {
-            color: #BB86FC; /* A nice purple for emphasis */
-        }
-
-        /* Alert and Information Blocks */
-        .alert-info {
-            background-color: #1e1e1e;
-            color: #E0E0E0;
-            border-color: #333333;
-        }
-
-        .alert-info.bg-dark {
-            background-color: #1e1e1e !important;
-        }
-        
-        /* Floating Panel and Select Menu */
-        .floating-panel {
-            background-color: #1E1E1E;
-            color: #E0E0E0;
-        }
-        
-        #system {
-            background-color: #2C2C2C;
-            color: #E0E0E0;
-            border: 1px solid #333333;
-        }
-
-        /* Table Styling (already dark, but this ensures consistency) */
-        .table-dark {
-            background-color: #1E1E1E;
-            color: #E0E0E0;
-            border-color: #333333;
-        }
-
-        .table-dark th, .table-dark td {
-            border-color: #333333;
-        }
-        
-        /* Form labels */
-        .col-form-label {
-            color: #E0E0E0;
-        }
-        
-        /* Notification styles */
-        .notification-list {
-            background-color: #1E1E1E;
-            border: 1px solid #333333;
-        }
-        
-        .notification-item {
-            color: #E0E0E0;
-        }
-
-        #success {
-            color: #4CAF50; /* Green for success */
-        }
-    </style>
+    <title>Ride Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <div id="sidebar1" class="collapsed">
-        <button id="toggleSidebar" class="btn btn-dark">☰</button>
+        <button id="toggleSidebar">☰</button>
         <div id="sidebar-header">Chat Driver</div>
         <div id="sidebar-content">
            <app-chat-driver></app-chat-driver>
         </div>
     </div>
-    <div id="resize-handle"></div>
+
     <div id="main-content">
-    <div class="alert alert-info bg-dark fade show" *ngIf="!dropOffTime">
-        <div class="d-flex align-items-center">
-            <div class="spinner-border text-info me-2" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mb-0">Calculating drop off time...</p>
-        </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    <nav class="navbar navbar-expand navbar-dark bg-dark">
-        <div class="container-fluid">
-            <div class="navbar-nav">
-                <a class="nav-link" id="gb" href="">
-                    <i class="bi bi-arrow-left"></i>
-                    Go Back
-                </a>
-                <a class="nav-link" id="upd" href="">
-                    <i class="bi bi-pencil"></i>
-                    Update
-                </a>
-                <a class="nav-link" id="ins" href="">
-                    <i class="bi bi-taxi-front"></i>
-                    Call new Cab
-                </a>
-                <a class="nav-link" id="chk" href="">
-                    <i class="bi bi-geo-alt"></i>
-                    Check Cab
-                </a>
-            </div>'<main>
-                <div style="position: relative; display: inline-block;">
-                    <button class="notification-button" id="notification-button">
-                        <span class="notification-icon"></span>
-                        <span class="notification-badge">3</span> </button>
-                    <div class="notification-list" id="notification-list">
-                        <ul id="noti-list">
-                            @for(notification of notificationsBar; track trackByNotificationId($index, notification)) {
-                                <li class="notification-item">
-                                    @if(notification.type == "success"){
-                                        <span class="notification-icon-small success-icon"></span>
-                                        <span id="{{notification.type}}">{{notification.message}}</span>
-                                        <button class="dismiss-button" id="{{notification.keyId}}"></button>
-                                        <span>{{timeFromTimestamp(notification.keyId)}}</span>
-                                    } @else if (notification.type == "fault") {
-                                        <span class="notification-icon-small warning-icon"></span>
-                                        <span>{{notification.message}}</span>
-                                        <button class="dismiss-button" id="{{notification.keyId}}"></button>
-                                        <span>{{timeFromTimestamp(notification.keyId)}}</span>
-                                    } @else if (notification.type == "info") {
-                                        <span class="notification-icon-small info-icon"></span>
-                                        <span>{{notification.message}}</span>
-                                        <button class="dismiss-button" id="{{notification.keyId}}"></button>
-                                        <span>{{timeFromTimestamp(notification.keyId)}}</span>
-                                    }
-                                </li>
-                            }
-                            </ul>
+        <div class="container-area">
+            <div class="page-header">
+                <h2>Cab Details</h2>
+                <div class="header-actions">
+                    <a id="gb" href="">Go Back</a>
+                    <a id="upd" href="">Update</a>
+                    <div style="position: relative;">
+                        <button class="notification-button" id="notification-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell" viewBox="0 0 16 16">
+                                <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"/>
+                            </svg>
+                            <span class="notification-badge"></span>
+                        </button>
+                        <div class="notification-list" id="notification-list">
+                            </div>
                     </div>
                 </div>
-            </main>'
-        </div>
-    </nav>
-    
-    <div id="divMsg" class="alert alert-info">
-        <p id="msg"></p>
-    </div>
-    <h2>Cab Details</h2>
-    <div *ngIf="exists" id = "data">
-        <h2>Your Driver's Details</h2>
-        <div class="mb-3 row">
-            <label for="UsernameInput"  class="col-sm-2 col-form-label">Name:</label>
-            <div class="col-sm-10">
-                <p>{{driver.name}}</p>
+            </div>
+
+            <div *ngIf="exists" class="driver-details-card">
+                <img src="{{driver.imageLink}}" alt="Driver Picture">
+                <div class="driver-info">
+                    <h3>Your Driver</h3>
+                    <div class="info-item"><label>Name:</label> <p>{{driver.name}}</p></div>
+                    <div class="info-item"><label>Vehicle:</label> <p>{{driver.carType}}</p></div>
+                </div>
+            </div>
+
+            <div id="showDetails"></div>
+
+            <div class="floating-panel">
+                <b>Measuring System:</b>
+                <select id="system">
+                    <option selected value="IMPERIAL">Imperial</option>
+                    <option value="METRIC">Metric</option>
+                </select>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Passengers</th>
+                            <th>Distance</th>
+                            <th>Est. Price</th>
+                            <th>Est. Drop Off</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{cabdata!.fromLocation}}</td>
+                            <td>{{cabdata!.toLocation}}</td>
+                            <td>{{cabdata!.date}}</td>
+                            <td>{{cabdata!.time}}</td>
+                            <td>{{cabdata!.numpassengers}}</td>
+                            <td>{{distance}}</td>
+                            <td>${{pricing}}</td>
+                            <td>{{set0(toString(dropOffTime.getHours()))+":"+set0(toString(dropOffTime.getMinutes()))}}</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-        <div class="mb-3 row">
-            <label for="PasswordInput"  class="col-sm-2 col-form-label">Model:</label>
-            <div class="col-sm-10">
-                <p>{{driver.carType}}</p>
-            </div>
-        </div>
-        <div class="mb-3 row circle fill">
-            <label for="PasswordInput"  class="col-sm-2 col-form-label">Picture:</label>
-            <img class="circle-image" src="{{driver.imageLink}}" id="img">
-        </div>
     </div>
-    <div id="showDetails"></div>
-    <div class="floating-panel">
-        <b>Measuring System</b>
-        <select id="system">
-            <option selected value="IMPERIAL">Imperial</option>
-            <option value="METRIC">Metric</option>
-          </select>
-      </div>
-      <div id="container">
-        <div id="map"></div>
-        <div id="sidebar"></div>
-      </div>
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover table-dark table-striped">
-            <thead>
-                <th>
-                    From Location
-                </th>
-                <th>
-                    To Location
-                </th>
-                <th>
-                    Date
-                </th>
-                <th>
-                    Time
-                </th>
-                <th>
-                    Number of Passengers
-                </th>
-    <th>
-        Ages
-    </th>
-    <th>
-        Distance Away
-    </th>
-    <th>
-        Pricing
-    </th>
-    <th>
-        Drop Off Time
-    </th>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{{cabdata!.fromLocation}}</td>
-                    <td>{{cabdata!.toLocation}}</td>
-                    <td>{{cabdata!.date}}</td>
-                    <td>{{cabdata!.time}}</td>
-                    <td>{{cabdata!.numpassengers}}</td>
-                    <td>{{cabdata!.ages}}</td>
-                    <td>{{distance}}</td>
-                    <td>${{pricing}}</td>
-                    <td>{{set0(toString(dropOffTime.getHours()))+":"+set0(toString(dropOffTime.getMinutes()))}}</td>
-                </tr>
-            </tbody>
-        </table>
-        
-    </div>
-</div>
 </body>
 </html>

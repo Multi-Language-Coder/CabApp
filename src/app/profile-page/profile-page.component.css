@@ -1,24 +1,99 @@
-.col-form-label{
-    font-weight:bold;
+/* General Body Styling */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f0f2f5; /* Light grey background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-#err{
-    display:none;
+
+/* Main container for the profile card */
+.profile-container {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+    box-sizing: border-box;
+    text-align: center;
 }
-body{
-    background-color: grey;
+
+/* Top navigation links */
+.top-nav {
+    display: flex;
+    justify-content: flex-end; /* Align links to the right */
+    gap: 20px; /* Space between links */
+    margin-bottom: 25px;
 }
-html, body {
-margin: 0;
-height: 100%;
+
+.top-nav a {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: 500;
 }
-.row{
-margin:15px;
+
+/* Profile Image Styling */
+.profile-image-wrapper img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%; /* Makes the image circular */
+    object-fit: cover; /* Prevents image distortion */
+    border: 4px solid #fff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    margin-bottom: 15px;
 }
-input{
-border-radius: 5px;
-border: 3px black solid;
-background: dimgray;
+
+/* User's Name */
+.user-name {
+    font-size: 2em;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
 }
-p,label{
-   font-size:18px; 
+
+/* User's Username */
+.user-username {
+    font-size: 1.1em;
+    color: #777;
+    margin-bottom: 25px;
+}
+
+/* Container for all profile details */
+.profile-details {
+    text-align: left;
+    margin-top: 20px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+/* Individual detail item (e.g., "Password" row) */
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    font-size: 16px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+/* Label for a detail (e.g., "Password:") */
+.detail-label {
+    font-weight: bold;
+    color: #555;
+}
+
+/* Value for a detail */
+.detail-value {
+    color: #333;
+}
+
+#err {
+    display: none;
 }

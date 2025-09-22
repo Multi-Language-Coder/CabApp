@@ -1,55 +1,136 @@
-body{
-    background-color: grey;
-    height:100vh;
-    width:100vw;
-    overflow-x:hidden;
-    overflow-y:hidden;
+/* General Body Styling */
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f0f2f5; /* Light grey background */
 }
-thead{
-    background-color: rgb(33, 37, 41);
+
+/* Main container for the content card */
+.container-area {
+    background-color: #ffffff;
+    margin: 40px auto;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 1200px; /* Allow it to be wide for the table */
 }
-button{
-   border:4px dimgrey solid;
-   border-radius: 3px;
-   margin-right:10px;
-   background-color:white;
-   opacity:1;
-   
+
+/* Header section with title and actions */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 20px;
 }
-img{
-    background-repeat: repeat-y;
-    width:16px;
-    height:16px;
+
+.page-header h2 {
+    margin: 0;
+    font-weight: 600;
 }
-.tblBtns{
-    width:32px;
-    height:32px;
+
+/* Container for header links/buttons */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
-#divMsg{
-    display:none;background-color: lightskyblue; color:blue;
+
+.header-actions a {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: 500;
+    font-size: 16px;
 }
-.circle {
-    border-radius: 50%;
+
+.header-actions a:hover {
+    text-decoration: underline;
+}
+
+/* Profile image in the header */
+.profile-img-link img {
     width: 40px;
     height: 40px;
-    padding: 3px;
-    border: 2px solid black;
-    text-align: center;
-  }
-
-  .fill {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    margin-left: 30px
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ddd;
 }
 
-.fill #img{
-    flex-shrink: 0;
-    min-width: 100%;
-    min-height: 100%
+/* Table styling */
+.table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 15px;
 }
-#rideDetails{
-    width:100%;
+
+.table thead th {
+    background-color: #f8f9fa;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table th, .table td {
+    padding: 12px 15px;
+    vertical-align: middle;
+}
+
+.table tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.table tbody tr:last-of-type {
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* Table action buttons */
+.tblBtns {
+    background: transparent;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.tblBtns:hover {
+    opacity: 1;
+}
+
+.tblBtns img {
+    width: 24px;
+    height: 24px;
+}
+
+/* Pagination Styling */
+.pagination {
+    margin-top: 25px;
+}
+
+.page-link {
+    color: #007bff;
+    border: 1px solid #ddd;
+    margin: 0 2px;
+    border-radius: 4px !important; /* Overriding bootstrap */
+}
+
+.page-item.active .page-link {
+    z-index: 3;
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.page-item.disabled .page-link {
+    color: #6c757d;
+    background-color: #fff;
+    border-color: #ddd;
 }

@@ -1,96 +1,303 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Sign Up</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hail - Sign Up</title>
+    <style>
+        /* --- Basic Reset & Font --- */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e0e5ec; /* A neutral, soft background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #4a5568;
+            padding: 20px;
+        }
+
+        /* --- Main Sign-up Container --- */
+        .signup-container {
+            background-color: #f7fafc;
+            padding: 2.5rem 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+        }
+
+        /* --- Header Section --- */
+        .signup-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+        
+        .logo .icon {
+            display: inline-block;
+            transform: translateY(2px);
+            margin-left: 5px;
+        }
+
+        .title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #718096;
+            margin-top: 0.25rem;
+        }
+
+        /* --- Form Styling --- */
+        .signup-form {
+            width: 100%;
+        }
+        
+        /* --- User Type Selector --- */
+        .user-type-selector {
+            display: flex;
+            background-color: #e2e8f0;
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 1.5rem;
+        }
+
+        .user-type-btn {
+            flex: 1;
+            padding: 0.65rem;
+            border: none;
+            background-color: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
+        }
+        
+        .user-type-btn.active {
+            background-color: #2d3748;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-type-btn .btn-icon {
+            stroke: #4a5568;
+            transition: stroke 0.3s;
+        }
+
+        .user-type-btn.active .btn-icon {
+            stroke: white;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: white;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .select-wrapper {
+            position: relative;
+        }
+        
+        .select-wrapper::after {
+            content: '▼';
+            font-size: 0.8rem;
+            color: #718096;
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.5);
+        }
+
+        /* --- Driver-Specific Fields Container --- */
+        #driver-fields {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+        }
+
+        #driver-fields.show {
+            max-height: 250px; /* Adjust as needed */
+            opacity: 1;
+        }
+        
+        /* --- Submit Button --- */
+        .submit-btn {
+            width: 100%;
+            padding: 0.85rem;
+            background-image: linear-gradient(to right, #2d3748 0%, #4a5568 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 0.5rem;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        /* --- Footer Section --- */
+        .login-link {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        .login-link a {
+            color: #4299e1;
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .login-link a:hover {
+            color: #2b6cb0;
+        }
+
+    </style>
 </head>
-
 <body>
-    <nav class="navbar navbar-expand navbar-dark bg-dark">
-        <div class="container-fluid">
-            <div class="navbar-nav">
-                <a class="nav-link" href="/login">
-                    <i class="bi bi-house-fill"></i>
-                    Login
-                </a>
-            </div>
-        </div>
-    </nav>
-    <h2 class="">Sign Up</h2>
-    
-    <form class="center" (ngSubmit)="onSubmit()">
-        <div class="mb-3 row">
-            <label for="NameInput"  class="col-sm-2 col-form-label">Name</label>
-            <div class="col-sm-10">
-                <input type="text" required placeholder="Boubacar Thiam" id="NameInput" [formControl]="name" />
-            </div>
-        </div>
-        <div class="mb-3 row">
 
-            <label for="UsernameInput"  class="col-sm-2 col-form-label">Username</label>
-            <div class="col-sm-10">
-                <input type="text" required placeholder="JoyBoyLuffyLaughing" id="UsernameInput" [formControl]="username" />
-            </div>
+<div class="signup-container">
+  <div class="signup-header">
+    <h1 class="logo">=HAIL <span class="icon">...</span></h1>
+    <h2 class="title">Sign Up</h2>
+    <p class="subtitle">Create your account</p>
+  </div>
 
-        </div>
-        <div class="mb-3 row">
-            <label for="PasswordInput"  class="col-sm-2 col-form-label">Password</label>
-            <div class="col-sm-10">
-                <input type="password" required placeholder="Password" id="PasswordInput" [formControl]="password" />
-            </div>
-        </div>
-        <div class="mb-3 row">
-            <label for="EmailInput"  class="col-sm-2 col-form-label">Email</label>
-            <div class="col-sm-10">
-                <input type="text" required placeholder="bsthiam5@gmail.com" id="EmailInput" [formControl]="email" />
-            </div>
-        </div>
-        <div class="mb-3 row">
-            <label for="NumberInput"  class="col-sm-2 col-form-label">Phone Number</label>
-            <div class="col-sm-10">
-                <input type="tel" pattern="\d{3}-\d{3}-\d{4}" required placeholder="486-496-2396" id="NumberInput" [formControl]="number" />
-            </div>
-        </div>
-        <div class="mb-3 row">
-            <label for="DescriptionInput"  class="col-sm-2 col-form-label">Description</label>
-            <div class="col-sm-10">
-                <textarea type="text" required placeholder="Description" id="DescriptionInput"
-                    [formControl]="description"></textarea>
-            </div>
-        </div>
-        <div class="mb-3 row">
-            <label for="RoleInput"  class="col-sm-2 col-form-label">Are you a driver?</label>
-            <div class="col-sm-10">
-                <select id="roles" required>
-                    <option>Select a role</option>
-                    <option value="false">Regular</option>
-                    <option value="true">Driver</option>
-                </select>
-            </div>
-            
-        </div>
-        <div id="stateDiv" class="mb-3 row selectdiv">
-            <label for="StateInput" class="col-sm-2 col-form-label">Please enter your state</label>
-            <div class="col-sm-10">
-                <select required (change)="updateTowns()" id="states">
-                    <option selected>Please select a state</option>
-                </select>
-            </div>
-        </div>
-        <div class="selectdiv mb-3 row" id="townDiv">
-            <label for="TownInput" class="col-sm-2 col-form-label">Please enter your Town</label>
-            <div class="col-sm-10">
-                <select required id="towns">
-                    <option selected>Please select a town</option>
-                </select>
-            </div>
-        </div>
-        <button type="submit" class="btn btn-dark" id="sub">Submit</button>
-    </form>
-    <div id="errorDiv" class="alert alert-danger">
-        <p id="error"></p>
+  <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()" class="signup-form">
+
+    <div class="user-type-selector">
+      <button
+        type="button"
+        class="user-type-btn"
+        [class.active]="!signUpForm.get('isDriver')?.value"
+        (click)="signUpForm.get('isDriver')?.setValue(false)">
+        Regular User
+      </button>
+      <button
+        type="button"
+        class="user-type-btn"
+        [class.active]="signUpForm.get('isDriver')?.value"
+        (click)="signUpForm.get('isDriver')?.setValue(true)">
+        Cab Driver
+      </button>
     </div>
-</body>
 
+    <div class="form-group">
+      <label for="name">Full Name</label>
+      <input type="text" id="name" formControlName="name" placeholder="Enter your full name">
+    </div>
+
+    <div class="form-group">
+      <label for="name">Username</label>
+      <input type="text" id="username" formControlName="username" placeholder="Enter your username">
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input type="email" id="email" formControlName="email" placeholder="Enter your email">
+    </div>
+
+    <div *ngIf="signUpForm.get('isDriver')?.value" class="driver-fields-container">
+      <div class="form-group">
+        <label for="state">State</label>
+        <div class="select-wrapper">
+          <select id="state" formControlName="state">
+            <option [ngValue]="null" disabled selected>Select your state</option>
+            <option *ngFor="let state of states" [value]="state.abbreviation">
+              {{ state.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="town">Town</label>
+        <div class="select-wrapper">
+          <select id="town" formControlName="town">
+            <option [ngValue]="null" disabled selected>Select your town</option>
+             <option *ngFor="let town of townsForSelectedState" [value]="town">
+              {{ town }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" formControlName="password" placeholder="••••••••">
+    </div>
+    <div class="form-group">
+      <label for="confirm-password">Confirm Password</label>
+      <input type="password" formControlName="confirm_password" id="confirm-password" placeholder="••••••••">
+    </div>
+
+    <button type="submit" class="submit-btn">Create Account</button>
+  </form>
+
+  <div class="login-link">
+    Already have an account? <a href="#">Log In</a>
+  </div>
+</div>
+
+
+</body>
 </html>
