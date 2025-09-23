@@ -112,6 +112,7 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
           import("leaflet-control-geocoder").then(()=>{
             const iconDefault = leafletModule.icon({
               iconUrl:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtc7mVH6hZXg3rdikngiEd_y734KZtGF51OQ&s",
+              iconSize: [20, 20],
             })
             leafletModule.Marker.prototype.options.icon = iconDefault;
             this.initMap(leafletModule);
@@ -348,22 +349,15 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
     return "" + number;
   }
   getDCD(L: typeof import("leaflet")) {
-    const fromLocation = `q=${this.cabdata.fromLocation.replaceAll(
-      " ",
-      "+"
-    )}&format=json`;
-    const toLocation = `q=${this.cabdata.toLocation.replaceAll(
-      " ",
-      "+"
-    )}&format=json`;
+
     this.http
       .get<IFeature[]>(
-        `https://api.geoapify.com/v1/geocode/search?$search=${fromLocation}&format=json&apiKey=2b50b749fdf94d9a9688dd81bdeed459`
+        `https://geocode.maps.co/search?q=${this.cabdata.fromLocation}&api_key=677875d2dcd56002469145oand89e51`
       )
       .subscribe((fromCoords) => {
         this.http
           .get<NominatimGeocoder[]>(
-            `https://api.geoapify.com/v1/geocode/search?$search=${toLocation}&format=json&apiKey=2b50b749fdf94d9a9688dd81bdeed459`
+            `https://geocode.maps.co/search?q=${this.cabdata.toLocation}&api_key=677875d2dcd56002469145oand89e51`
           )
           .subscribe((toCoords) => {
             const cabdataTime = this.cabdata.time.split(":");
@@ -377,12 +371,15 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
             const distanceCoords = `${fromCoords[0].lon},${fromCoords[0].lat};${toCoords[0].lon},${toCoords[0].lat}`;
             this.http
               .get<NominatimDistanceMatrix>(
-                `https://router.project-osrm.org/table/v1/driving/${distanceCoords}?annotations=distance`
+                `https://router.project-osrm.org/route/v1/driving/${distanceCoords}?overview=false&alternatives=true&steps=true&hints=;`
               )
               .subscribe((distance) => {
-                price = new Price(distance.distances[0][1], 1 + this.tax);
+                const newDropOff = this.dropOffTime.getSeconds()+distance.routes[0].duration
+                this.dropOffTime.setSeconds(newDropOff)
+                price = new Price(distance.routes[0].distance, 1 + this.tax);
                 this.pricing = price.getEstFare();
-                this.distance = `${(distance.distances[0][1] / 1609).toFixed(
+                console.error(this.pricing)
+                this.distance = `${(distance.routes[0].distance / 1609).toFixed(
                   2
                 )} Miles`;
               });
@@ -770,6 +767,7 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
       mainContent?.classList.toggle("collapsed");
     });
     const notificationButton = document.getElementById("notification-button");
+    console.log(notificationButton)
     const notificationList = document.getElementById("notification-list");
     const notificationBadge = document.querySelector(".notification-badge"); // Get the badge
 
@@ -1029,10 +1027,15 @@ export interface NominatimDistanceMatrix {
   code: string;
   distances: number[][];
   sources_to_targets: dist[][];
+  routes:extrDet[]
 }
 interface dist {
   distance: number;
   time: number;
   source_index: number;
   target_index: number;
+}
+interface extrDet{
+  duration:number;
+  distance:number;
 }

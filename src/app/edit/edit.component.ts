@@ -1,136 +1,125 @@
 import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { User } from '../../environments/user.interface';
+import { Component, OnDestroy, AfterViewInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Subject, of } from 'rxjs';
+import { takeUntil, catchError } from 'rxjs/operators';
 import { Cabdata } from '../../environments/cabdata.interface';
 import { environment } from '../../environments/environment';
+
 @Component({
   selector: 'app-edit',
   templateUrl: './edit.component.html',
-  styleUrl: './edit.component.css',
-  host: {
-    ngSkipHydration: 'true'
-  },
+  styleUrls: ['./edit.component.css'],
   standalone:false
 })
-export class EditComponent {
-  user=""
-  link=""
-  tablerows:HTMLCollectionOf<HTMLTableRowElement>| undefined=undefined;
+export class EditComponent implements AfterViewInit, OnDestroy {
+  user = "";
+  link = "";
+  tablerows: HTMLCollectionOf<HTMLTableRowElement> | undefined = undefined;
+  cabdataArr: Array<Cabdata> = [];
+  numofpages = 0;
+  currentpage = 1;
+  numRows = 3;
+
+  private destroy$ = new Subject<void>();
 
   constructor(private route: ActivatedRoute, private http: HttpClient) {
-    console.log(document.cookie)
-    const cookies = document.cookie.split(";")
-    let username = "";
-    console.log(cookies);
-    for(let cookie of cookies){
-      console.log(cookie.split("=")[0])
-      if(cookie.split("=")[0].includes("username")){
+    const cookies = document.cookie.split(";");
+    for (let cookie of cookies) {
+      if (cookie.trim().startsWith("username=")) {
         this.user = cookie.split("=")[1];
         break;
       }
     }
-    this.link="insert/"+this.user;
-    this.loadData()
-    this.numofpages=Math.ceil(this.cabdataArr.length/3)
-    document.addEventListener("DOMContentLoaded",()=>{
-      this.tablerows = document.getElementsByTagName("tr");
-      for(let i = 0; i < this.tablerows.length; i++){
-        let tr = this.tablerows.item(i);
-        if(parseInt(tr!.id)>3){
-          tr!.setAttribute("style","position:absolute; left: -9999px;")
-        }
-        if(this.numofpages==1){
-          document.getElementById("next")!.className="page-item disabled"
-        }
-      }
-    })
+    this.link = "insert/" + this.user;
+    this.loadData();
   }
-  cabdataArr: Array<Cabdata> = []
-  numofpages=0;
-  currentpage=1;
-  img=''
-  //passwords: Array<string> = []
-  numRows=3
-  goTo(pgNum:number){
-    for(let i = 0; i < this.tablerows!.length; i++){
-      this.tablerows!.item(i)!.setAttribute("style","position:absolute; left: -9999px;")
+
+  ngAfterViewInit(): void {
+    // This code now runs after the view is initialized, so the table rows will exist.
+    this.tablerows = document.getElementsByTagName("tr");
+    for (let i = 0; i < this.tablerows.length; i++) {
+      let tr = this.tablerows.item(i);
+      if (tr && parseInt(tr.id) > 3) {
+        tr.setAttribute("style", "position:absolute; left: -9999px;");
+      }
     }
-    const maxRow = pgNum*3;
-      let rowIds = [maxRow-2, maxRow-1, maxRow]
-      for(let i = 0; i < 3; i++){
-        document.getElementById(""+rowIds[i])!.setAttribute("style","");
-        if((document.getElementById(""+rowIds[i+1])!)==undefined){
-          break;
-        }
+    if (this.numofpages === 1) {
+      const nextButton = document.getElementById("next");
+      if (nextButton) {
+        nextButton.className = "page-item disabled";
       }
-      
-      this.currentpage=pgNum;
-      console.log(this.currentpage==this.numofpages)
-      if(this.currentpage!=1 ){
-        document.getElementById("prev")!.className="page-item"
-        console.log("success")
-      } if(this.currentpage==1){
-        document.getElementById("prev")!.className="page-item disabled"
-        console.log("success")
-      } if(this.currentpage==this.numofpages){
-        console.log("success")
-        document.getElementById("next")!.className="page-item disabled"
-      } if(this.currentpage<this.numofpages && this.currentpage>1){
-        console.log("success")
-        document.getElementById("next")!.className="page-item"
-        document.getElementById("prev")!.className="page-item"
-      } 
-      console.log(this.currentpage==this.numofpages)
+    }
   }
+
   loadData() {
-    this.http.get<Cabdata[]>(environment.apiBaseUrl+"getCabDetails").subscribe((cabdata) => {
+    this.http.get<Cabdata[]>(environment.apiBaseUrl + "getCabDetails").pipe(
+      takeUntil(this.destroy$),
+      catchError(error => {
+        console.error('Error loading cab details:', error);
+        return of([]); // Return an empty array to prevent breaking the app
+      })
+    ).subscribe((cabdata) => {
       let i = 1;
-      for(let cabdata1 of cabdata){
-        if(cabdata1.userrequested == this.user){
-          cabdata1.id=i;
-          this.cabdataArr.push(cabdata1)
-          i++
+      for (let cabdata1 of cabdata) {
+        if (cabdata1.userrequested == this.user) {
+          cabdata1.id = i;
+          this.cabdataArr.push(cabdata1);
+          i++;
         }
       }
-      /*console.log(userdata)
-      
-      for (let user of userdata) {
-        if(i==21){
-          break;
-        }else{
-          this.passwords.push(user.password)
-          let len = user.password.length;
-          user.password = ""
-          for (let j = 0; j < len; j++) {
-            user.password += "*"
-          }
-          this.users.push(user)
-      i++;
-        }
-      }*/
-      
-    })
+      this.numofpages = Math.ceil(this.cabdataArr.length / this.numRows);
+    });
   }
+
   delete(id: number) {
-    this.http.delete(environment.apiBaseUrl+`cab/${id}`,{responseType:'text'}).subscribe((val) => {
-      let divmsg = document.getElementById("divMsg");
-      let msg = document.getElementById("msg");
-      let span = document.createElement("span");
-      span.innerHTML = "Cab Details successfully deleted.<br/>"
-      msg?.appendChild(span)
-      divmsg?.setAttribute("style", "display:block;background-color: lightskyblue; color:blue;")
-      alert("Successful")
-        divmsg?.setAttribute("style", "display:none;background-color: lightskyblue; color:blue;")
-        msg?.removeChild(span)
-        location.reload()
-    })
+    this.http.delete(environment.apiBaseUrl + `cab/${id}`, { responseType: 'text' }).pipe(
+      takeUntil(this.destroy$),
+      catchError(error => {
+        console.error('Error deleting cab:', error);
+        alert("Failed to delete the ride.");
+        return of(null);
+      })
+    ).subscribe(() => {
+      alert("Successfully deleted ride.");
+      location.reload();
+    });
   }
+
+  goTo(pgNum: number) {
+    if (!this.tablerows) return;
+
+    for (let i = 0; i < this.tablerows.length; i++) {
+      this.tablerows.item(i)?.setAttribute("style", "position:absolute; left: -9999px;");
+    }
+    const maxRow = pgNum * this.numRows;
+    const rowIds = Array.from({ length: this.numRows }, (_, i) => maxRow - (this.numRows - 1) + i);
+
+    for (const id of rowIds) {
+      const row = document.getElementById("" + id);
+      if (row) {
+        row.setAttribute("style", "");
+      }
+    }
+    this.currentpage = pgNum;
+
+    // Pagination logic
+    const prev = document.getElementById("prev");
+    const next = document.getElementById("next");
+    if (prev) prev.classList.toggle("disabled", pgNum === 1);
+    if (next) next.classList.toggle("disabled", pgNum === this.numofpages);
+  }
+
   toUpdPg(id: number) {
     location.href = `/update/${id}?username=${this.user}`;
   }
-  toChkPg(id:number){
-    location.href=`/showDetails/${id}`
+
+  toChkPg(id: number) {
+    location.href = `/showDetails/${id}`;
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
