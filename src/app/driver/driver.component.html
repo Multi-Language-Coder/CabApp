@@ -48,7 +48,7 @@
                                     <td>{{request.userrequested}}</td>
                                     <td>{{request.fromLocation}}</td>
                                     <td>{{request.toLocation}}</td>
-                                    <td>${{pullAsync(calculatePricing(request))}}</td>
+                                    <td>${{request.pricing}}</td>
                                     <td><button class="btn postMap">Show Map</button></td>
                                     <td><button class="btn btn-success acceptRequest" [id]="request.accepted">Accept</button></td>
                                     <td><button class="btn btn-danger denyRequest" [id]="request.accepted">Deny</button></td>

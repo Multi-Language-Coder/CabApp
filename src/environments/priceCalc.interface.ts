@@ -19,7 +19,7 @@ export class Price {
         for (let i = 0; i < km; i += 0.01) {
             estFare += this.pricePerKM / 100;
         }
-        estFare = estFare * this.taxRate;
+        estFare = estFare * (1+this.taxRate);
         return this.money_round(estFare);
     }
     money_round(num: number) {

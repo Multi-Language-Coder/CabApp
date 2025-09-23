@@ -1,4 +1,6 @@
 export interface Cabdata{
+    pricing?: number;
+    calculatedPrice?:number;
     cabid:number;
     fromLocation:string;
     toLocation:string;
@@ -11,7 +13,6 @@ export interface Cabdata{
     driver:string,
     accepted:string,
     status:string,
-    pricing?:number,
     chatAv?:boolean,
     fromLoc?:number[],
     toLoc?:number[]

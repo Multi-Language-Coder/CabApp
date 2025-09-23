@@ -2,20 +2,22 @@ import { Component, AfterViewInit, OnDestroy, Inject, PLATFORM_ID } from "@angul
 import { HttpClient } from "@angular/common/http";
 import { User } from "../../environments/user.interface";
 import { Cabdata } from "../../environments/cabdata.interface";
-import { Subject, of, timer, Observable } from "rxjs";
-import { takeUntil, catchError, debounce, switchMap, map, concatMap } from "rxjs/operators";
+import { Subject, of, timer, Observable, from } from "rxjs";
+import { takeUntil, catchError, debounce, switchMap, map, concatMap, delay, toArray, tap } from "rxjs/operators";
 import { Location } from "../location.interface";
 import { WebSocketAPI } from "../WebSocketAPI.component";
 import { Price } from "../../environments/priceCalc.interface";
 import { isPlatformBrowser } from "@angular/common";
 import { environment } from "../../environments/environment";
-import { IFeature, IFeatureV2 } from "../../environments/geoapify.interface";
+import { IFeatureV2 } from "../../environments/geoapify.interface";
+import { TaxState } from "../../environments/taxes.interface";
+import { NominatimDistanceMatrix } from "../show-details/show-details.component";
 
 @Component({
   selector: "app-driver",
   templateUrl: "./driver.component.html",
   styleUrls: ["./driver.component.css"],
-  standalone:false
+  standalone: false
 })
 export class DriverComponent implements AfterViewInit, OnDestroy {
   userrequests: Cabdata[] = [];
@@ -24,7 +26,7 @@ export class DriverComponent implements AfterViewInit, OnDestroy {
   username: string = "";
   location: Location = { lat: 0, lng: 0 };
   tax: number = 0;
-  loading: boolean = true; // Added loading property
+  loading: boolean = true;
   private map!: L.Map;
   private routingControl: any;
   confirmText: string = "";
@@ -42,60 +44,95 @@ export class DriverComponent implements AfterViewInit, OnDestroy {
       }
     }
   }
-  
+
   ngAfterViewInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       import("leaflet").then(L => {
         const leafletModule = L.default || L;
         (window as any).L = leafletModule;
         this.initMap(leafletModule);
-        
+
         import("leaflet-routing-machine").then(() => {
           import("leaflet-control-geocoder").then(() => {
-              this.initializeComponentLogic(leafletModule);
+            // Start the main logic ONLY after geolocation and tax data are fetched
+            this.startGeolocationAndProcessing(leafletModule);
           });
         });
       });
     }
   }
+
+  // New method to control the startup sequence
+  startGeolocationAndProcessing(L: typeof import("leaflet")): void {
+    if (navigator.geolocation) {
+      this.http.get<User>(environment.apiBaseUrl + `user1/${this.username}`).pipe(
+        switchMap(user => {
+          if (!user) {
+            this.loading = false;
+            return of(null); // Stop if user not found
+          }
+          this.userdata = user;
+          // Chain the tax fetching call
+          return this.http.get<TaxState[]>(
+            "https://gist.githubusercontent.com/suryadutta/2dcdb6f43c501835c64d12580c63f168/raw/5cf6255eea95356527db2468c164adad09e82c03/salesTaxByState.JSON"
+          );
+        }),
+        takeUntil(this.destroy$)
+      ).subscribe(taxArr => {
+        if (taxArr) {
+          const stateTax = taxArr.find(t => this.userdata.state === t.Abbreviation);
+          this.tax = stateTax ? stateTax["Combined Tax Rate"] : 0;
+          console.log(this.tax) // Use Combined Rate and handle if not found
+        }
+
+        // NOW that we have user and tax data, we can start the rest of the logic
+        this.initializeComponentLogic(L);
+        this.watchPosition();
+      });
+    } else {
+      this.loading = false;
+    }
+  }
   
+  // Separated watchPosition to run after initial setup
+  watchPosition(): void {
+    this.watchPositionId = navigator.geolocation.watchPosition(position => {
+      this.location = { lat: position.coords.latitude, lng: position.coords.longitude };
+      const updatedUser = { ...this.userdata, position: [this.location.lat, this.location.lng], status: "Available" };
+      this.http.put(environment.apiBaseUrl + "users", updatedUser).pipe(
+        catchError(() => of(null))
+      ).subscribe();
+    });
+  }
+
   initializeComponentLogic(L: typeof import("leaflet")): void {
     const toggleButton = document.getElementById("toggleSidebar");
     const sidebar = document.getElementById("sidebar1");
     toggleButton?.addEventListener("click", () => sidebar?.classList.toggle("collapsed"));
 
     this.geocodeSubject.pipe(
-      debounce(() => timer(1000)),
+      debounce(() => timer(3000)),
       switchMap(cabdatas => this.processCabDatas(cabdatas)),
+      concatMap(requests =>
+        requests.length === 0 ? of([]) :
+        from(requests).pipe(
+          concatMap(req =>
+            this.calculatePricing(req).pipe(
+              map(price => ({
+                ...req,
+                pricing: price
+              }))
+            )
+          ),
+          toArray()
+        )
+      ),
       takeUntil(this.destroy$)
-    ).subscribe(processedRequests => {
-      this.userrequests = processedRequests;
-      this.loading = false; // Turn off loading screen
+    ).subscribe(requestsWithPrices => {
+      this.userrequests = requestsWithPrices;
+      this.loading = false;
       setTimeout(() => this.addPostMapEventListeners(L), 100);
     });
-
-    this.startGeolocation();
-  }
-
-  startGeolocation(): void {
-    if (navigator.geolocation) {
-      this.http.get<User>(environment.apiBaseUrl + `user1/${this.username}`).pipe(
-        takeUntil(this.destroy$),
-        catchError(() => of(null))
-      ).subscribe(user => {
-        if (!user) return;
-        this.userdata = user;
-        
-        this.watchPositionId = navigator.geolocation.watchPosition(position => {
-          this.location = { lat: position.coords.latitude, lng: position.coords.longitude };
-          const updatedUser = { ...this.userdata, position: [this.location.lat, this.location.lng], status: "Available" };
-          this.http.put(environment.apiBaseUrl + "users", updatedUser).pipe(
-            takeUntil(this.destroy$),
-            catchError(() => of(null))
-          ).subscribe();
-        });
-      });
-    }
   }
 
   initMap(L: typeof import("leaflet")): void {
@@ -140,84 +177,89 @@ export class DriverComponent implements AfterViewInit, OnDestroy {
       btn.addEventListener("click", () => this.denyRequest(this.userrequests[i]));
     });
   }
-  
+
   postRouteToMap(request: Cabdata, L: typeof import("leaflet")): void {
+    this.map.removeControl(this.routingControl);
+    this.routingControl = null;
     this.http.get<IFeatureV2>(`https://api.geoapify.com/v1/geocode/search?name=${request.fromLocation}&format=json&apiKey=2b50b749fdf94d9a9688dd81bdeed459`).pipe(
-        concatMap((fromLoc: IFeatureV2) => 
-            this.http.get<IFeatureV2>(`https://api.geoapify.com/v1/geocode/search?name=${request.toLocation}&format=json&apiKey=2b50b749fdf94d9a9688dd81bdeed459`).pipe(
-                map((toLoc: IFeatureV2) => ({fromLoc, toLoc}))
-            )
-        ),
-        takeUntil(this.destroy$),
-        catchError(() => of(null))
+      concatMap((fromLoc: IFeatureV2) =>
+        this.http.get<IFeatureV2>(`https://api.geoapify.com/v1/geocode/search?name=${request.toLocation}&format=json&apiKey=2b50b749fdf94d9a9688dd81bdeed459`).pipe(
+          map((toLoc: IFeatureV2) => ({ fromLoc, toLoc }))
+        )
+      ),
+      takeUntil(this.destroy$),
+      catchError(() => of(null))
     ).subscribe(locations => {
-        if(locations && locations.fromLoc.results.length > 0 && locations.toLoc.results.length > 0) {
-            const waypoints = [
-                L.latLng(this.location.lat, this.location.lng),
-                L.latLng(locations.fromLoc.results[0].lat, locations.fromLoc.results[0].lon),
-                L.latLng(locations.toLoc.results[0].lat, locations.toLoc.results[0].lon)
-            ];
-            if (this.routingControl) this.map.removeControl(this.routingControl);
-            this.routingControl = (L as any).Routing.control({ waypoints, show: false }).addTo(this.map);
-        }
+      if (locations && locations.fromLoc.results.length > 0 && locations.toLoc.results.length > 0) {
+        const waypoints = [
+          L.latLng(this.location.lat, this.location.lng),
+          L.latLng(locations.fromLoc.results[0].lat, locations.fromLoc.results[0].lon),
+          L.latLng(locations.toLoc.results[0].lat, locations.toLoc.results[0].lon)
+        ];
+        if (this.routingControl) this.map.removeControl(this.routingControl);
+        this.routingControl = (L as any).Routing.control({ waypoints, show: false,draggableWaypoints: false, 
+        
+        routeWhileDragging: false }).addTo(this.map);
+      }
     });
   }
 
   acceptRequest(request: Cabdata): void {
-      if (request.accepted === "a2") {
-          alert("You've already accepted this request.");
-          return;
-      }
-      this.http.post(environment.apiBaseUrl + `accepted/${request.cabid}`, { driver: this.username, status: "Picked" }, { responseType: "text" })
-          .pipe(takeUntil(this.destroy$), catchError(() => of(null)))
-          .subscribe(() => this.sendConfirmMessage("Request Accepted!"));
+    if (request.accepted === "a2") {
+      alert("You've already accepted this request.");
+      return;
+    }
+    this.http.post(environment.apiBaseUrl + `accepted/${request.cabid}`, { driver: this.username, status: "Picked" }, { responseType: "text" })
+      .pipe(takeUntil(this.destroy$), catchError(() => of(null)))
+      .subscribe(() => this.sendConfirmMessage("Request Accepted!"));
   }
 
   denyRequest(request: Cabdata): void {
-      this.http.get(environment.apiBaseUrl + `denied/${request.cabid}`, { responseType: "text" })
-          .pipe(takeUntil(this.destroy$), catchError(() => of(null)))
-          .subscribe(() => {
-              this.sendConfirmMessage("Request Denied.");
-              this.userrequests = this.userrequests.filter(req => req.cabid !== request.cabid);
-          });
+    this.http.get(environment.apiBaseUrl + `denied/${request.cabid}`, { responseType: "text" })
+      .pipe(takeUntil(this.destroy$), catchError(() => of(null)))
+      .subscribe(() => {
+        this.sendConfirmMessage("Request Denied.");
+        this.userrequests = this.userrequests.filter(req => req.cabid !== request.cabid);
+      });
   }
-  
-  // Added missing methods
-  async calculatePricing(data: Cabdata): Promise<number> {
-    try {
-      const fromLoc = await this.http.get<IFeatureV2>(`https://api.geoapify.com/v1/geocode/search?name=${data.fromLocation}&format=json&apiKey=2b50b749fdf94d9a9688dd81bdeed459`).toPromise();
-      const toLoc = await this.http.get<IFeatureV2>(`https://api.geoapify.com/v1/geocode/search?name=${data.toLocation}&format=json&apiKey=2b50b749fdf94d9a9688dd81bdeed459`).toPromise();
-      
-      if (fromLoc && toLoc && fromLoc.results.length > 0 && toLoc.results.length > 0) {
-        const distance = this.calculateDistance(fromLoc.results[0], toLoc.results[0]);
-        const price = new Price(distance, 1.06); // Assuming 6% tax
+
+  calculatePricing(data: Cabdata): Observable<number> {
+    const fromLocation$ = this.http.get<IFeatureV2>(`https://api.geoapify.com/v1/geocode/search?name=${data.fromLocation}&format=json&apiKey=2b50b749fdf94d9a9688dd81bdeed459`);
+
+    return fromLocation$.pipe(
+      delay(1000), 
+      concatMap(fromLoc => {
+        const toLocation$ = this.http.get<IFeatureV2>(`https://api.geoapify.com/v1/geocode/search?name=${data.toLocation}&format=json&apiKey=2b50b749fdf94d9a9688dd81bdeed459`);
+        return toLocation$.pipe(
+          map(toLoc => ({ fromLoc, toLoc }))
+        );
+      }),
+      delay(1000),
+      concatMap(({ fromLoc, toLoc }) => {
+        if (!fromLoc?.results?.[0] || !toLoc?.results?.[0]) {
+            console.error("Geocoding failed for:", data.fromLocation, "or", data.toLocation);
+            return of(null);
+        }
+        const distanceCoords = `${fromLoc.results[0].lon},${fromLoc.results[0].lat};${toLoc.results[0].lon},${toLoc.results[0].lat}`;
+        return this.http.get<NominatimDistanceMatrix>(`https://router.project-osrm.org/route/v1/driving/${distanceCoords}?overview=false&alternatives=true&steps=true&hints=;`);
+      }),
+      map(res => {
+        if (!res?.routes?.[0]?.distance) {
+            console.error("Could not calculate route distance.");
+            return 0;
+        }
+        // **FIXED CALCULATION HERE**
+        
+        const price = new Price(res.routes[0].distance, this.tax);
+        console.log(price.getEstFare(),res.routes[0].distance)
         return price.getEstFare();
-      }
-      return 0;
-    } catch {
-      return 0;
-    }
+      }),
+      catchError(error => {
+        console.error("Error in pricing calculation pipeline:", error);
+        return of(0);
+      })
+    );
   }
-
-  calculateDistance(from: { lat: number, lon: number }, to: { lat: number, lon: number }): number {
-      const R = 6371e3; // metres
-      const φ1 = from.lat * Math.PI/180;
-      const φ2 = to.lat * Math.PI/180;
-      const Δφ = (to.lat-from.lat) * Math.PI/180;
-      const Δλ = (to.lon-from.lon) * Math.PI/180;
-
-      const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-                Math.cos(φ1) * Math.cos(φ2) *
-                Math.sin(Δλ/2) * Math.sin(Δλ/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-      return R * c; // in metres
-  }
-  
-  async pullAsync(pricePromise: Promise<number>): Promise<number> {
-      return await pricePromise;
-  }
-
 
   sendConfirmMessage(text: string): void {
     const msgBox = document.getElementById("messageBox");

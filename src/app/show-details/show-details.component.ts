@@ -153,8 +153,10 @@ export class ShowDetailsComponent implements OnInit, OnDestroy {
           (L as any).Routing.control({
             waypoints: [this.cabdata.fromLocation, this.cabdata.toLocation],
 
-            routeWhileDragging: true,
-
+            routeWhileDragging: false,
+            
+            draggableWaypoints: false, 
+        
             showAlternatives: true,
 
             geocoder: (L.Control as any).Geocoder.nominatim(),
