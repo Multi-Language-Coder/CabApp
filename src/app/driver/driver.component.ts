@@ -106,16 +106,17 @@ export class DriverComponent implements AfterViewInit, OnDestroy {
   }
 
   initializeComponentLogic(L: typeof import("leaflet")): void {
+    console.log("working")
     const toggleButton = document.getElementById("toggleSidebar");
     const sidebar = document.getElementById("sidebar1");
     toggleButton?.addEventListener("click", () => sidebar?.classList.toggle("collapsed"));
 
     this.geocodeSubject.pipe(
       debounce(() => timer(3000)),
-      switchMap(cabdatas => this.processCabDatas(cabdatas)),
-      concatMap(requests =>
-        requests.length === 0 ? of([]) :
-        from(requests).pipe(
+      switchMap(cabdatas => this.processCabDatas(cabdatas).pipe(
+        concatMap(requests =>
+        cabdatas.length === 0 ? of([]) :
+        from(cabdatas).pipe(
           concatMap(req =>
             this.calculatePricing(req).pipe(
               map(price => ({
@@ -127,6 +128,8 @@ export class DriverComponent implements AfterViewInit, OnDestroy {
           toArray()
         )
       ),
+      )),
+      
       takeUntil(this.destroy$)
     ).subscribe(requestsWithPrices => {
       this.userrequests = requestsWithPrices;
@@ -157,6 +160,7 @@ export class DriverComponent implements AfterViewInit, OnDestroy {
   }
 
   processCabDatas(cabdatas: Cabdata[]): Observable<Cabdata[]> {
+    console.log("working in processCabData")
     if (!this.userdata) return of([]);
     const filtered = cabdatas.filter(cabdata =>
       cabdata.fromLocation.includes(this.userdata.town) &&
@@ -225,9 +229,9 @@ export class DriverComponent implements AfterViewInit, OnDestroy {
 
   calculatePricing(data: Cabdata): Observable<number> {
     const fromLocation$ = this.http.get<IFeatureV2>(`https://api.geoapify.com/v1/geocode/search?name=${data.fromLocation}&format=json&apiKey=2b50b749fdf94d9a9688dd81bdeed459`);
-
+    console.log("working here as well")
     return fromLocation$.pipe(
-      delay(1000), 
+       
       concatMap(fromLoc => {
         const toLocation$ = this.http.get<IFeatureV2>(`https://api.geoapify.com/v1/geocode/search?name=${data.toLocation}&format=json&apiKey=2b50b749fdf94d9a9688dd81bdeed459`);
         return toLocation$.pipe(
